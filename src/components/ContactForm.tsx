@@ -1,0 +1,192 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { site } from "@/lib/site";
+
+type Status = "idle" | "sending" | "sent" | "error";
+const TYPES = [
+  "Rodinný dům",
+  "Bytový dům",
+  "Veřejná stavba",
+  "Komerční stavba",
+  "Interiér",
+  "Krajina",
+  "Jiné",
+];
+const BUDGETS = [
+  "do 10 mil. Kč",
+  "10–30 mil. Kč",
+  "30–100 mil. Kč",
+  "nad 100 mil. Kč",
+  "zatím nevím",
+];
+
+export function ContactForm() {
+  const [status, setStatus] = useState<Status>("idle");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  async function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+    const errs: Record<string, string> = {};
+    if (!data.name?.trim()) errs.name = "Napište prosím své jméno.";
+    if (!data.email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
+      errs.email = "Zkontrolujte e-mailovou adresu, např. jana@firma.cz.";
+    if ((data.message ?? "").trim().length < 20)
+      errs.message = "Popište projekt alespoň jednou větou (20 znaků).";
+    setErrors(errs);
+    if (Object.keys(errs).length) {
+      const first = form.querySelector<HTMLElement>(`[name="${Object.keys(errs)[0]}"]`);
+      first?.focus();
+      return;
+    }
+    if (data.company) return; // honeypot
+
+    if (!site.formEndpoint) {
+      const body = `${data.message}\n\nTyp: ${data.type}\nMísto: ${data.location}\nRozpočet: ${data.budget}\nTermín: ${data.timeline}\n\n${data.name}, ${data.email}, ${data.phone ?? ""}`;
+      window.location.href = `mailto:${site.email}?subject=${encodeURIComponent(`Poptávka: ${data.type}`)}&body=${encodeURIComponent(body)}`;
+      setStatus("sent");
+      return;
+    }
+    setStatus("sending");
+    try {
+      const res = await fetch(site.formEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      setStatus("sent");
+      form.reset();
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status === "sent") {
+    return (
+      <div className="form-status" role="status">
+        Děkujeme. Ozveme se do dvou pracovních dnů. Pokud spěcháte, volejte {site.phone}.
+      </div>
+    );
+  }
+
+  const field = (name: string, label: string, input: React.ReactNode) => (
+    <div className="field">
+      <label htmlFor={name}>{label}</label>
+      {input}
+      {errors[name] && (
+        <p className="error" id={`${name}-error`}>
+          {errors[name]}
+        </p>
+      )}
+    </div>
+  );
+  const aria = (name: string) => ({
+    "aria-invalid": errors[name] ? true : undefined,
+    "aria-describedby": errors[name] ? `${name}-error` : undefined,
+  });
+
+  return (
+    <form className="form" onSubmit={submit} noValidate id="poptavka">
+      <div className="grid" style={{ rowGap: 22 }}>
+        <div style={{ gridColumn: "span 6" }}>
+          {field(
+            "name",
+            "Jméno a příjmení *",
+            <input id="name" name="name" autoComplete="name" {...aria("name")} />,
+          )}
+        </div>
+        <div style={{ gridColumn: "span 6" }}>
+          {field(
+            "email",
+            "E-mail *",
+            <input id="email" name="email" type="email" autoComplete="email" {...aria("email")} />,
+          )}
+        </div>
+        <div style={{ gridColumn: "span 6" }}>
+          {field(
+            "phone",
+            "Telefon",
+            <input id="phone" name="phone" type="tel" autoComplete="tel" />,
+          )}
+        </div>
+        <div style={{ gridColumn: "span 6" }}>
+          {field(
+            "type",
+            "Typ projektu",
+            <select id="type" name="type" defaultValue={TYPES[0]}>
+              {TYPES.map((t) => (
+                <option key={t}>{t}</option>
+              ))}
+            </select>,
+          )}
+        </div>
+        <div style={{ gridColumn: "span 6" }}>
+          {field(
+            "location",
+            "Místo stavby",
+            <input id="location" name="location" placeholder="obec nebo katastr" />,
+          )}
+        </div>
+        <div style={{ gridColumn: "span 3" }}>
+          {field(
+            "budget",
+            "Rozpočet stavby",
+            <select id="budget" name="budget" defaultValue={BUDGETS[4]}>
+              {BUDGETS.map((t) => (
+                <option key={t}>{t}</option>
+              ))}
+            </select>,
+          )}
+        </div>
+        <div style={{ gridColumn: "span 3" }}>
+          {field(
+            "timeline",
+            "Kdy chcete začít",
+            <input id="timeline" name="timeline" placeholder="např. jaro 2027" />,
+          )}
+        </div>
+        <div style={{ gridColumn: "1 / -1" }}>
+          {field(
+            "message",
+            "O projektu *",
+            <textarea
+              id="message"
+              name="message"
+              placeholder="Pozemek, stávající stav, co potřebujete…"
+              {...aria("message")}
+            />,
+          )}
+        </div>
+      </div>
+      <input
+        type="text"
+        name="company"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        style={{ position: "absolute", left: -9999 }}
+      />
+      <p className="label">
+        Odesláním souhlasíte se zpracováním údajů pro odpověď na poptávku. Více v{" "}
+        <a className="u" href="/ochrana-soukromi">
+          zásadách ochrany soukromí
+        </a>
+        .
+      </p>
+      {status === "error" && (
+        <p className="form-status" role="alert">
+          Zprávu se nepodařilo odeslat. Zkuste to prosím znovu, nebo napište na {site.email}.
+        </p>
+      )}
+      <div>
+        <button type="submit" className="btn btn-lime" disabled={status === "sending"}>
+          {status === "sending" ? "Odesíláme…" : "Odeslat poptávku"}{" "}
+          <span className="arrow">→</span>
+        </button>
+      </div>
+    </form>
+  );
+}

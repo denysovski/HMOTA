@@ -1,0 +1,48 @@
+{
+  "name": "hmota",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Website for an architectural studio: scroll-built 3D hero and a 3D map of built work across the Czech Republic.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.9"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "format": "prettier --write .",
+    "bake:geo": "node scripts/bake-geo.mjs",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@fontsource-variable/hanken-grotesk": "^5.3.0",
+    "@fontsource-variable/source-serif-4": "^5.3.1",
+    "@gsap/react": "^2.1.2",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
+    "d3-geo": "^3.1.2",
+    "gsap": "^3.15.1",
+    "lenis": "^1.3.27",
+    "next": "16.4.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.187.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/d3-geo": "^3.1.1",
+    "@types/node": "^22",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.187.0",
+    "eslint": "^10.15.0",
+    "eslint-config-next": "16.4.6",
+    "prettier": "^3.10.1",
+    "typescript": "~5.9.3",
+    "vitest": "^5.1.1"
+  }
+}
