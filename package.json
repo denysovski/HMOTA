@@ -16,7 +16,9 @@
     "test": "vitest run",
     "format": "prettier --write .",
     "bake:geo": "node scripts/bake-geo.mjs",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build"
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "build:pages": "GITHUB_PAGES=true next build",
+    "preview:pages": "npm run build:pages && npx --yes serve out"
   },
   "dependencies": {
     "@fontsource-variable/hanken-grotesk": "^5.3.0",
@@ -44,5 +46,6 @@
     "prettier": "^3.10.1",
     "typescript": "~5.9.3",
     "vitest": "^5.1.1"
-  }
+  },
+  "homepage": "https://denysovski.github.io/HMOTA/"
 }

@@ -1057,6 +1057,25 @@ a:hover .arrow {
   border: 1px solid var(--ink);
 }
 
+.contact-details {
+  grid-column: 1 / span 4;
+}
+.contact-form {
+  grid-column: 6 / -1;
+}
+
+.form .span-wide {
+  grid-column: span 6;
+}
+.form .span-half {
+  grid-column: span 3;
+}
+@media (max-width: 767px) {
+  .form .span-wide {
+    grid-column: 1 / -1;
+  }
+}
+
 /* ---------- prose pages ---------- */
 
 .prose {
@@ -1083,7 +1102,9 @@ a:hover .arrow {
   .teaser-map,
   .teaser-copy,
   .detail-facts,
-  .detail-text {
+  .detail-text,
+  .contact-details,
+  .contact-form {
     grid-column: 1 / -1;
   }
   .intro-services p,

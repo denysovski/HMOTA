@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { site } from "@/lib/site";
 
@@ -91,28 +92,28 @@ export function ContactForm() {
   return (
     <form className="form" onSubmit={submit} noValidate id="poptavka">
       <div className="grid" style={{ rowGap: 22 }}>
-        <div style={{ gridColumn: "span 6" }}>
+        <div className="span-wide">
           {field(
             "name",
             "Jméno a příjmení *",
             <input id="name" name="name" autoComplete="name" {...aria("name")} />,
           )}
         </div>
-        <div style={{ gridColumn: "span 6" }}>
+        <div className="span-wide">
           {field(
             "email",
             "E-mail *",
             <input id="email" name="email" type="email" autoComplete="email" {...aria("email")} />,
           )}
         </div>
-        <div style={{ gridColumn: "span 6" }}>
+        <div className="span-wide">
           {field(
             "phone",
             "Telefon",
             <input id="phone" name="phone" type="tel" autoComplete="tel" />,
           )}
         </div>
-        <div style={{ gridColumn: "span 6" }}>
+        <div className="span-wide">
           {field(
             "type",
             "Typ projektu",
@@ -123,14 +124,14 @@ export function ContactForm() {
             </select>,
           )}
         </div>
-        <div style={{ gridColumn: "span 6" }}>
+        <div className="span-wide">
           {field(
             "location",
             "Místo stavby",
             <input id="location" name="location" placeholder="obec nebo katastr" />,
           )}
         </div>
-        <div style={{ gridColumn: "span 3" }}>
+        <div className="span-half">
           {field(
             "budget",
             "Rozpočet stavby",
@@ -141,7 +142,7 @@ export function ContactForm() {
             </select>,
           )}
         </div>
-        <div style={{ gridColumn: "span 3" }}>
+        <div className="span-half">
           {field(
             "timeline",
             "Kdy chcete začít",
@@ -171,9 +172,9 @@ export function ContactForm() {
       />
       <p className="label">
         Odesláním souhlasíte se zpracováním údajů pro odpověď na poptávku. Více v{" "}
-        <a className="u" href="/ochrana-soukromi">
+        <Link className="u" href="/ochrana-soukromi">
           zásadách ochrany soukromí
-        </a>
+        </Link>
         .
       </p>
       {status === "error" && (

@@ -7,7 +7,7 @@ export const site = {
   wordmark: ["Hmota", "Architektonický", "Ateliér"],
   description:
     "Architektonický ateliér. Navrhujeme domy, veřejné stavby, interiéry a krajinu po celé České republice.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://hmota.vercel.app",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://denysovski.github.io/HMOTA",
   founded: "[rok založení]",
   founder: "[Jméno zakladatele]",
   email: "[studio@email.cz]",

@@ -18,7 +18,7 @@ export default function ContactPage() {
         </Reveal>
       </header>
       <div className="grid" style={{ rowGap: 56 }}>
-        <div style={{ gridColumn: "1 / span 4" }} className="small">
+        <div className="small contact-details">
           <p className="label">E-mail</p>
           <p style={{ marginBottom: 18 }}>
             <a className="u" href={`mailto:${site.email}`}>
@@ -42,7 +42,7 @@ export default function ContactPage() {
           <p className="label">Odpovídáme</p>
           <p>do dvou pracovních dnů</p>
         </div>
-        <div style={{ gridColumn: "6 / -1" }}>
+        <div className="contact-form">
           <ContactForm />
         </div>
       </div>
