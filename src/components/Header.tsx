@@ -9,7 +9,7 @@ export function Header() {
   const isCurrent = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   return (
     <header className="site-header">
-      <Link href="/" className="wordmark" aria-label={`${site.name}, úvodní stránka`}>
+      <Link href="/" className="wordmark">
         {site.wordmark.map((w) => (
           <span key={w}>{w}</span>
         ))}

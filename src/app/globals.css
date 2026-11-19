@@ -204,7 +204,9 @@ ol {
   letter-spacing: 0.005em;
 }
 .ink .label {
-  color: var(--grey-dark);
+  /* follows the zone colour while it flips from paper to ink, so contrast holds in both states */
+  color: inherit;
+  opacity: 0.68;
 }
 
 .small {
@@ -385,6 +387,10 @@ a:hover .arrow {
   font-weight: 500;
   letter-spacing: -0.01em;
 }
+.site-nav a {
+  display: inline-block;
+  padding-block: 5px;
+}
 .site-nav li:not(:last-child)::after {
   content: ",";
 }
@@ -403,6 +409,11 @@ a:hover .arrow {
 .footer-cols li {
   font-size: var(--t-sm);
   line-height: 1.6;
+}
+.footer-cols a,
+.footer-legal a {
+  display: inline-block;
+  padding-block: 3px;
 }
 .footer-word {
   margin-top: clamp(80px, 10vw, 160px);

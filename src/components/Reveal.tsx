@@ -38,6 +38,8 @@ export function Reveal({
         mask: "lines",
         linesClass: "reveal-line",
         autoSplit: true,
+        // lines only wrap whole words, so screen readers can read the text as is
+        aria: "none",
         onSplit(self) {
           gsap.set(el, { visibility: "visible" });
           if (played) return;

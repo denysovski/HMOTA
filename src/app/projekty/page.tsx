@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { ProjectIndex } from "@/components/ProjectIndex";
 import { Reveal } from "@/components/Reveal";
 import { projects } from "@/content/projects";
@@ -18,9 +17,7 @@ export default function ProjectsPage() {
           Projekty
         </Reveal>
       </header>
-      <Suspense fallback={null}>
-        <ProjectIndex projects={projects} />
-      </Suspense>
+      <ProjectIndex projects={projects} />
     </div>
   );
 }

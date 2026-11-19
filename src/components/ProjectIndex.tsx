@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSyncExternalStore } from "react";
 import {
   STATUSES,
   TYPES,
@@ -12,10 +12,27 @@ import {
 import { ScatterGrid } from "./ScatterGrid";
 import { area, statusLabel, typeLabel, year } from "@/lib/format";
 
+const EVENT = "hmota:query";
+
+function subscribe(cb: () => void) {
+  window.addEventListener("popstate", cb);
+  window.addEventListener(EVENT, cb);
+  return () => {
+    window.removeEventListener("popstate", cb);
+    window.removeEventListener(EVENT, cb);
+  };
+}
+
+/** Update the query string in place (Next keeps its router in sync with history.replaceState). */
+function setQuery(next: URLSearchParams) {
+  const qs = next.toString();
+  window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
+  window.dispatchEvent(new Event(EVENT));
+}
+
 export function ProjectIndex({ projects }: { projects: Project[] }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const params = useSearchParams();
+  const search = useSyncExternalStore(subscribe, () => window.location.search, () => "");
+  const params = new URLSearchParams(search);
   const type = params.get("typ") as ProjectType | null;
   const status = params.get("stav") as ProjectStatus | null;
   const view = params.get("pohled") === "seznam" ? "seznam" : "mrizka";
@@ -24,7 +41,7 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
     const next = new URLSearchParams(params.toString());
     if (value) next.set(key, value);
     else next.delete(key);
-    router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
+    setQuery(next);
   };
 
   const list = projects.filter(
@@ -97,7 +114,7 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
           <button
             type="button"
             className="u"
-            onClick={() => router.replace(pathname, { scroll: false })}
+            onClick={() => setQuery(new URLSearchParams())}
           >
             Zrušit filtry
           </button>
