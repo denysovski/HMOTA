@@ -33,8 +33,9 @@ The running record of the ProUI workflow for HMOTA. A later session continues fr
 
 ## Type and colour
 
-- Display and UI: Hanken Grotesk Variable (self-hosted via @fontsource).
-- Statements and long text: Source Serif 4 Variable with optical sizes.
+- Display (headlines, wordmark, navigation): Instrument Sans Variable, the closest free match to PP Neue Montreal, which Kononenko uses.
+- Statements and long text: Hedvig Letters Serif Variable, the same serif Kononenko uses (free, OFL).
+- Small text, labels, data and numbers: Geist Variable.
 - Mono: none (SL-25).
 - Colour strategy: neutral + one signal. Paper #ffffff, paper-2 #f6f6f4, ink #0a0a0a, label #757575
   (4.6:1), grey-ink #5e5e5e (6.5:1), lime #c8ff2e used as a fill only (ink on lime 16.8:1).

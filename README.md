@@ -33,7 +33,7 @@ A website for an architectural studio working across the Czech Republic: a scrol
 | **3D map** | A white clay relief of Czechia with the 14 regions, rivers, cities and contour lines, cut out as a plinth. Every project is a pin with a hover card: architects, client, commission dates, duration, type, place and area. |
 | **Projects** | Scattered grid or list, filters by type and status kept in the URL, and a project page with a facts table, a locator map and a line drawing. |
 | **Motion** | Line-by-line mask reveals, clip-path image reveals, a white-to-ink flip, hairlines drawn from a centred headline, a pin drop on the map teaser and a magnetic call to action. Everything respects *reduced motion*. |
-| **Design** | Monochrome paper and ink after Kononenko Architectural Bureau, Hanken Grotesk for headlines and Source Serif 4 for statements, and electric lime **#C8FF2E** used only as a fill. |
+| **Design** | Monochrome paper and ink after Kononenko Architectural Bureau, three typefaces: Instrument Sans for headlines (the closest free match to PP Neue Montreal), Hedvig Letters Serif for statements and Geist for small text and numbers, and electric lime **#C8FF2E** used only as a fill. |
 | **SEO** | Meta and Open Graph, JSON-LD (ArchitectureFirm, CreativeWork with Place and GeoCoordinates), sitemap, robots and a 404 page. |
 
 ---
@@ -124,7 +124,7 @@ The site was built with **XSlop**, starting from a researched design brief ([`do
 - **GSAP** (ScrollTrigger, SplitText) for every scroll animation, and **Lenis** for smooth scrolling.
 - **d3-geo** for the projection and **zod** for the content schema.
 - **Vitest** for the projection, relief and date helpers. **ESLint**, CI and Lighthouse CI run on every push.
-- Fonts: Hanken Grotesk and Source Serif 4, self-hosted.
+- Fonts: Instrument Sans (headlines), Hedvig Letters Serif (statements) and Geist (small text and numbers), self-hosted via @fontsource, all under the SIL Open Font License.
 
 ```
 src/app/                 pages: index, projekty, projekty/[slug], mapa, studio, kontakt, legal, 404

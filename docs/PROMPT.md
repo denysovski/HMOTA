@@ -66,11 +66,12 @@ highlighter. Apply style/MY-STYLE.md wherever this prompt and the reference say 
 Never put lime text on white (1.13:1). No gradients, glow or shadows, except the soft shadow under the map
 hover card.
 
-## Type (self-hosted from npm via @fontsource, WOFF2, swap, TY-19, TY-21)
-- Grotesk, for headlines, UI and data: Hanken Grotesk Variable. Display at 400-500 with tracking
-  -0.04em and line-height 0.92-0.98. UI at 13-15 px. Data with tabular-nums.
-- Serif, for statements and long text: Source Serif 4 Variable (optical sizes). Statements at
-  clamp(28px, 3.4vw, 60px), line-height 1.08, tracking -0.02em.
+## Type: three faces (self-hosted from npm via @fontsource, WOFF2, swap, TY-19, TY-21)
+- Display, for headlines, the wordmark and navigation: Instrument Sans Variable, the closest free match
+  to PP Neue Montreal (Kononenko's headline face). Weight 400, tracking -0.04em, line-height 0.9-0.95.
+- Serif, for statements and long text: Hedvig Letters Serif Variable (opsz 24), the same serif
+  Kononenko uses. Statements at clamp(27px, 3.1vw, 58px), line-height 1.1.
+- Small sans, for labels, data, numbers and UI text: Geist Variable with tabular figures.
 - Both have full Czech diacritics. No mono font (SL-25). Buttons in normal weight.
 - One MEGA TYPE moment per page.
 

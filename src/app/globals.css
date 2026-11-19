@@ -2,9 +2,13 @@
    Contrast (WCAG): ink/paper 19.8:1, grey-ink/paper 6.5:1, label/paper 4.6:1,
    grey-dark/ink 7.0:1, ink/lime 16.8:1. Lime is never text on paper (1.1:1). */
 
-@import "@fontsource-variable/hanken-grotesk/wght.css";
-@import "@fontsource-variable/source-serif-4/opsz.css";
-@import "@fontsource-variable/source-serif-4/opsz-italic.css";
+/* Three typefaces:
+   - Instrument Sans: headlines, wordmark, navigation (the closest free match to PP Neue Montreal)
+   - Hedvig Letters Serif: statements and long text (the serif used by Kononenko)
+   - Geist: small informative text, labels, data and numbers */
+@import "@fontsource-variable/instrument-sans/wdth.css";
+@import "@fontsource-variable/hedvig-letters-serif/opsz.css";
+@import "@fontsource-variable/geist/wght.css";
 
 :root {
   --paper: #ffffff;
@@ -24,8 +28,9 @@
   --muted: var(--grey-ink);
   --rule: var(--line);
 
-  --font-sans: "Hanken Grotesk Variable", "Helvetica Neue", Arial, sans-serif;
-  --font-serif: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;
+  --font-display: "Instrument Sans Variable", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Hedvig Letters Serif Variable", Georgia, "Times New Roman", serif;
+  --font-sans: "Geist Variable", "Helvetica Neue", Arial, sans-serif;
 
   --pad: clamp(14px, 1.5vw, 28px);
   --gap: clamp(12px, 1.4vw, 24px);
@@ -70,7 +75,6 @@ body {
   font-family: var(--font-sans);
   font-size: var(--t-base);
   line-height: 1.5;
-  font-feature-settings: "ss01";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -214,7 +218,7 @@ ol {
 
 .h2 {
   font-size: var(--t-h2);
-  font-weight: 430;
+  font-weight: 400;
   line-height: 0.94;
   letter-spacing: -0.045em;
   text-wrap: balance;
@@ -222,7 +226,7 @@ ol {
 
 .mega {
   font-size: var(--t-mega);
-  font-weight: 430;
+  font-weight: 400;
   line-height: 0.88;
   letter-spacing: -0.05em; /* proui-ignore SL-62: display size only */
 }
@@ -230,10 +234,10 @@ ol {
 .statement {
   font-family: var(--font-serif);
   font-size: var(--t-statement);
-  font-weight: 380;
-  line-height: 1.08;
-  letter-spacing: -0.022em;
-  font-variation-settings: "opsz" 60;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.018em;
+  font-variation-settings: "opsz" 24;
   text-wrap: pretty;
 }
 .statement em {
@@ -244,7 +248,7 @@ ol {
   font-family: var(--font-serif);
   font-size: var(--t-md);
   line-height: 1.45;
-  font-variation-settings: "opsz" 18;
+  font-variation-settings: "opsz" 16;
   max-width: 62ch;
 }
 .serif-text + .serif-text {
@@ -261,6 +265,22 @@ ol {
   padding: 0 0.12em;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
+}
+
+/* headlines, wordmark and navigation use the display face */
+.h2,
+.mega,
+.wordmark,
+.site-nav,
+.hero-title,
+.footer-word,
+.map-hud h1,
+.facts strong,
+.plist .name,
+.btn,
+.chip {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 96;
 }
 
 /* line-mask reveal (set up by <Reveal>) */
@@ -459,7 +479,7 @@ a:hover .arrow {
   bottom: var(--pad);
   z-index: 2;
   font-size: clamp(40px, 5.8vw, 108px);
-  font-weight: 450;
+  font-weight: 400;
   letter-spacing: -0.05em; /* proui-ignore SL-62: display size only */
   line-height: 0.9;
 }
@@ -863,7 +883,7 @@ a:hover .arrow {
 }
 .map-hud h1 {
   font-size: clamp(36px, 4.6vw, 84px);
-  font-weight: 430;
+  font-weight: 400;
   letter-spacing: -0.05em; /* proui-ignore SL-62: display size only */
   line-height: 0.92;
   margin-bottom: 18px;
