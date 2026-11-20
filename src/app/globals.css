@@ -877,7 +877,7 @@ html[data-leaving="true"] body::before {
   transition: color 500ms var(--ease-out);
 }
 .hero-stages li[data-active="true"] {
-  color: var(--paper);
+  color: var(--ink);
 }
 .hero-pill {
   position: absolute;
@@ -885,7 +885,7 @@ html[data-leaving="true"] body::before {
   top: 50%;
   height: 100%;
   border-radius: 999px;
-  background: #3f7a00;
+  background: var(--lime);
   transition:
     transform 650ms var(--ease-out),
     width 650ms var(--ease-out),
