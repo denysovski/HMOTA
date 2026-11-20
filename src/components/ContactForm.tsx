@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type FocusEvent, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Select } from "./Select";
 import { site } from "@/lib/site";
+import { Arrow } from "@/components/Arrow";
 
 type Status = "idle" | "sending" | "sent" | "error";
 const TYPES = [
@@ -27,28 +28,6 @@ export function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
-  const [bar, setBar] = useState<{ x: number; y: number; w: number; on: boolean }>({
-    x: 0,
-    y: 0,
-    w: 0,
-    on: false,
-  });
-
-  // a lime rule slides to the field that has focus
-  const onFocusIn = (e: FocusEvent<HTMLFormElement>) => {
-    const field = (e.target as HTMLElement).closest(".field");
-    const form = formRef.current;
-    if (!field || !form) return;
-    const control = field.querySelector("input:not([type=hidden]), textarea, .select-button");
-    if (!control) return;
-    const f = form.getBoundingClientRect();
-    const r = control.getBoundingClientRect();
-    setBar({ x: r.left - f.left, y: r.bottom - f.top - 2, w: r.width, on: true });
-  };
-  const onFocusOut = (e: FocusEvent<HTMLFormElement>) => {
-    if (!formRef.current?.contains(e.relatedTarget as Node)) setBar((b) => ({ ...b, on: false }));
-  };
-
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -113,24 +92,7 @@ export function ContactForm() {
   });
 
   return (
-    <form
-      ref={formRef}
-      className="form"
-      onSubmit={submit}
-      noValidate
-      id="poptavka"
-      onFocus={onFocusIn}
-      onBlur={onFocusOut}
-    >
-      <span
-        className="focus-bar"
-        aria-hidden="true"
-        style={{
-          transform: `translate3d(${bar.x}px, ${bar.y}px, 0)`,
-          width: bar.w,
-          opacity: bar.on ? 1 : 0,
-        }}
-      />
+    <form ref={formRef} className="form" onSubmit={submit} noValidate id="poptavka">
       <div className="grid" style={{ rowGap: 22 }}>
         <div className="span-wide">
           {field(
@@ -216,8 +178,7 @@ export function ContactForm() {
       )}
       <div>
         <button type="submit" className="btn btn-lime" disabled={status === "sending"}>
-          {status === "sending" ? "Odesíláme…" : "Odeslat poptávku"}{" "}
-          <span className="arrow">→</span>
+          {status === "sending" ? "Odesíláme…" : "Odeslat poptávku"} <Arrow />
         </button>
       </div>
     </form>

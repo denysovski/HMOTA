@@ -27,14 +27,14 @@ const raw: ProjectInput[] = [
     completed: "2022-09",
     areaM2: 8400,
     summary:
-      "Kancelářská budova v bývalém přístavním areálu. Betonový skelet, hluboké lodžie a parter otevřený nábřeží.",
+      "Kancelářská budova v bývalém přístavním areálu. Betonový skelet, hluboké lodžie a přízemí otevřené k nábřeží.",
     text: [
-      "Dům stojí na místě bývalých skladů u holešovického přístavu. Hlavní hmota je zvednutá nad parter, takže přízemí patří kavárnám a průchodu k vodě.",
+      "Dům stojí na místě bývalých skladů u holešovického přístavu. Hlavní hmota je zvednutá nad prosklené přízemí, které patří kavárnám a průchodu k vodě.",
       "Betonový skelet s rastrem 8,1 metru umožňuje dělit podlaží na malé i velké kanceláře. Hluboké lodžie stíní jižní fasádu a v létě snižují potřebu chlazení.",
     ],
     massing: [
       { x: 0, z: 0, w: 40, d: 18, h: 24, label: "Hlavní hmota · 7 NP" },
-      { x: 4, z: 18, w: 22, d: 12, h: 8, glass: true, label: "Přístavba · parter" },
+      { x: 4, z: 18, w: 22, d: 12, h: 8, glass: true, label: "Přístavba · kavárna" },
     ],
     featured: true,
     placeholder: false,

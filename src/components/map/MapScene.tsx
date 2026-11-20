@@ -468,7 +468,7 @@ const Inner = forwardRef<MapSceneHandle, SceneProps & { reduced: boolean }>(func
       if (!p) return;
       const { x, z } = project(p.lng, p.lat);
       const y = heightAtWorld(x, z);
-      const target = new THREE.Vector3(x + 1.1, y + 0.2, z); // pin sits left of the docked card
+      const target = new THREE.Vector3(x, y + 0.2, z); // the clicked pin lands in the middle
       const dir = new THREE.Vector3(x * 0.15, 0, 1).normalize();
       const pos = target.clone().add(new THREE.Vector3(dir.x * 4.2, 7.6, dir.z * 4.2));
       fly(pos, target);
@@ -558,7 +558,7 @@ const MapScene = forwardRef<MapSceneHandle, SceneProps>(function MapScene(props,
   return (
     <Canvas
       shadows
-      dpr={[1, 1.75]}
+      dpr={[1.5, 2]} /* supersampled even on 1x screens, so the thin lines stay clean */
       camera={{ fov: 32, near: 0.1, far: 200, position: HOME.pos.toArray() }}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       onCreated={({ gl, scene }) => {

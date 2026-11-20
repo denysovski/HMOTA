@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { nav, site } from "@/lib/site";
 import { lockScroll } from "@/lib/scroll";
+import { Arrow } from "@/components/Arrow";
 
 export function Header() {
   const pathname = usePathname();
@@ -37,7 +38,10 @@ export function Header() {
       cancelAnimationFrame(raf);
     };
   }, [pathname]);
-  const isCurrent = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  // while the next page loads, the clicked link already counts as current (one underline only)
+  const [pending, setPending] = useState<string | null>(null);
+  const here = pending ?? pathname;
+  const isCurrent = (href: string) => (href === "/" ? here === "/" : here.startsWith(href));
 
   useEffect(() => {
     lockScroll(open);
@@ -54,6 +58,7 @@ export function Header() {
   if (lastPath !== pathname) {
     setLastPath(pathname);
     setOpen(false);
+    setPending(null);
   }
 
   return (
@@ -72,6 +77,7 @@ export function Header() {
                   href={n.href}
                   className="u"
                   aria-current={isCurrent(n.href) ? "page" : undefined}
+                  onClick={() => n.href !== pathname && setPending(n.href)}
                 >
                   {n.label}
                 </Link>
@@ -115,7 +121,7 @@ export function Header() {
             tabIndex={open ? 0 : -1}
             onClick={() => setOpen(false)}
           >
-            Začít projekt <span className="arrow">→</span>
+            Začít projekt <Arrow />
           </Link>
           <p className="label">{site.email}</p>
         </div>

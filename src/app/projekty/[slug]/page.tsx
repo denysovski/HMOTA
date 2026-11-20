@@ -7,6 +7,7 @@ import { CzMapSvg } from "@/components/map/CzMapSvg";
 import { getProject, projects } from "@/content/projects";
 import { area, duration, monthYear, regionLabel, statusLabel, typeLabel } from "@/lib/format";
 import { site } from "@/lib/site";
+import { Arrow } from "@/components/Arrow";
 
 type Params = { slug: string };
 
@@ -115,7 +116,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
               />
               <p className="label" style={{ marginTop: 8 }}>
                 <Link href={`/mapa?projekt=${p.slug}`} className="u">
-                  Ukázat na 3D mapě →
+                  Ukázat na 3D mapě <Arrow />
                 </Link>
               </p>
             </div>
@@ -147,12 +148,8 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
         style={{ borderTop: "1px solid var(--line)" }}
       >
         <p className="label">Další projekt</p>
-        <Link
-          href={`/projekty/${next.slug}`}
-          className="h2"
-          style={{ display: "inline-block", marginTop: 12 }}
-        >
-          {next.name} <span className="arrow">→</span>
+        <Link href={`/projekty/${next.slug}`} className="h2 next-link">
+          <span className="next-link-text">{next.name}</span> <Arrow />
         </Link>
       </nav>
     </article>

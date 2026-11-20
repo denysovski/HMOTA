@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import {
   STATUSES,
   TYPES,
@@ -11,6 +11,8 @@ import {
 } from "@/content/schema";
 import { ScatterGrid } from "./ScatterGrid";
 import { area, statusLabel, typeLabel, year } from "@/lib/format";
+import { Arrow } from "@/components/Arrow";
+import { ListPreview } from "./ListPreview";
 
 const EVENT = "hmota:query";
 
@@ -31,6 +33,7 @@ function setQuery(next: URLSearchParams) {
 }
 
 export function ProjectIndex({ projects }: { projects: Project[] }) {
+  const [hover, setHover] = useState<string | null>(null);
   const search = useSyncExternalStore(
     subscribe,
     () => window.location.search,
@@ -105,7 +108,7 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
             Seznam
           </button>
           <Link href={mapHref} className="u">
-            Mapa →
+            Mapa <Arrow />
           </Link>
         </div>
       </div>
@@ -131,10 +134,10 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
         ) : view === "mrizka" ? (
           <ScatterGrid items={list} />
         ) : (
-          <ul className="plist">
+          <ul className="plist" onMouseLeave={() => setHover(null)}>
             {list.map((p, i) => (
               <li key={p.slug} style={{ ["--i" as string]: i }}>
-                <Link href={`/projekty/${p.slug}`}>
+                <Link href={`/projekty/${p.slug}`} onMouseEnter={() => setHover(p.slug)}>
                   <span className="name">{p.name}</span>
                   <span>{p.municipality}</span>
                   <span className="muted">{typeLabel(p)}</span>
@@ -147,6 +150,7 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
           </ul>
         )}
       </div>
+      {view !== "mrizka" && list.length > 0 && <ListPreview projects={list} active={hover} />}
     </>
   );
 }

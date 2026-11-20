@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { Avatar } from "@/components/Avatar";
 import { site, team } from "@/lib/site";
+import { SocialScatter } from "@/components/SocialScatter";
 
 export const metadata: Metadata = {
   title: "Studio",
@@ -79,18 +80,21 @@ export default function StudioPage() {
             po kolaudaci.
           </p>
         </div>
-        <ul className="grid team">
-          {team.map((p, i) => (
-            <li key={p.name} className="person" style={slot(i)}>
-              <Avatar kind={p.avatar} title={`Ilustrace: ${p.name}`} />
-              <p className="person-name">{p.name}</p>
-              <p className="label">
-                {p.role} · v ateliéru od {p.since}
-              </p>
-              <p className="small muted person-bio">{p.bio}</p>
-            </li>
-          ))}
-        </ul>
+        <div className="team-wrap">
+          <SocialScatter />
+          <ul className="grid team">
+            {team.map((p, i) => (
+              <li key={p.name} className="person" style={slot(i)}>
+                <Avatar kind={p.avatar} title={`Ilustrace: ${p.name}`} />
+                <p className="person-name">{p.name}</p>
+                <p className="label">
+                  {p.role} · v ateliéru od {p.since}
+                </p>
+                <p className="small muted person-bio">{p.bio}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
         <p className="small muted" style={{ marginTop: 40 }}>
           Hledáme architekta nebo architektku do týmu soutěží.{" "}
           <Link href="/kontakt" className="u">

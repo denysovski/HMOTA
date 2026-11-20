@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, type MutableRefObject } from "react";
+import { memo, useMemo, useRef, type MutableRefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Volume } from "@/content/schema";
@@ -13,6 +13,8 @@ export interface HeroSceneProps {
   active: boolean;
   onReady?: () => void;
   onTime?: (h: number) => void;
+  /** receives the scene's invalidate(): the page calls it on scroll, so frames render on demand */
+  kick?: MutableRefObject<(() => void) | null>;
 }
 
 const SCALE = 0.1; // metres to scene units
@@ -29,12 +31,15 @@ const easeIO = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2
 
 /** stage values shared by every part of the scene, computed once per frame */
 interface Stages {
-  draw: number; // plan lines
+  draw: number; // neighbourhood plan: streets and neighbouring footprints fade in first
+  main: number; // then the plot and the building's own footprint, last
   rise: number; // walls extrude
   fill: number; // clay fill
   material: number; // concrete and glass
   light: number; // sun sweep
   labels: number; // callouts draw in once scrolling starts
+  trees: number; // trees grow in
+  people: number; // people fade in on the pavements
 }
 
 type Ctx = { minX: number; maxX: number; minZ: number; maxZ: number; cx: number; cz: number };
@@ -141,6 +146,7 @@ function Callout({
       const y = ((1 - p.y) / 2) * size.height;
       node.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
       node.style.opacity = (p.z < 1 ? o : 0).toFixed(3);
+      node.style.pointerEvents = o > 0.6 ? "auto" : "none";
     }
   });
   return (
@@ -246,7 +252,7 @@ function Building({
         (v.z + v.d - cz) * SCALE,
       );
     }
-    const m = 2.5;
+    const m = STREET / 2 - (STREET - 6) / 2; // on the kerb, like the edge of every other block
     rect(
       (b.minX - cx - m) * SCALE,
       (b.minZ - cz - m) * SCALE,
@@ -257,8 +263,10 @@ function Building({
     g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
     return g;
   }, [massing, b, cx, cz]);
-  const planMat = useMemo(() => new THREE.LineBasicMaterial({ color: LIME }), []);
-  const planCount = plan.getAttribute("position").count;
+  const planMat = useMemo(
+    () => new THREE.LineBasicMaterial({ color: LIME, transparent: true, opacity: 0 }),
+    [],
+  );
 
   // neighbourhood: footprints, ghost volumes that fill in as soft clay, and their names
   const ctx = useMemo(() => {
@@ -273,6 +281,7 @@ function Building({
       opacity: 0,
     });
     const labels: { pos: [number, number, number]; text: string; h: number }[] = [];
+    const meshes: THREE.Mesh[] = [];
     for (const v of vols) {
       const x0 = (v.x - cx) * SCALE;
       const z0 = (v.z - cz) * SCALE;
@@ -286,7 +295,8 @@ function Building({
       const mesh = new THREE.Mesh(box, clayMat);
       clayMat.depthWrite = false;
       mesh.castShadow = false;
-      mesh.receiveShadow = false;
+      mesh.receiveShadow = true;
+      meshes.push(mesh);
       mesh.renderOrder = -1;
       ghost.add(mesh);
       labels.push({
@@ -297,7 +307,7 @@ function Building({
     }
     const pg = new THREE.BufferGeometry();
     pg.setAttribute("position", new THREE.Float32BufferAttribute(planPts, 3));
-    return { pg, ghost, ghostMat, clayMat, labels };
+    return { pg, ghost, ghostMat, clayMat, labels, meshes };
   }, [b, cx, cz]);
   const contextPlanMat = useMemo(
     () => new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0.12 }),
@@ -305,12 +315,13 @@ function Building({
   );
 
   useFrame(() => {
-    const { draw, rise, fill, material } = stages.current;
-    plan.setDrawRange(0, Math.floor((planCount * draw) / 2) * 2);
+    const { draw, main, rise, fill, material } = stages.current;
+    planMat.opacity = main;
     contextPlanMat.opacity = 0.14 * draw;
     // neighbours stay a faint ghost: a hint of the street, never competing with the building
     ctx.ghostMat.opacity = 0.1 * rise;
-    ctx.clayMat.opacity = 0.12 * fill;
+    ctx.clayMat.opacity = 0.16 * fill;
+    for (const m of ctx.meshes) m.castShadow = fill > 0.4;
     for (const part of parts) {
       if (part.mesh) part.mesh.castShadow = fill > 0.5;
       part.edgeMat.opacity = rise > 0 ? 0.9 - 0.45 * material : 0;
@@ -473,12 +484,16 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
           if (rnd(k++) > 0.68)
             treePos.push([u(x + rnd(k) * 2), 0, u(z + side * (STREET / 2 - 1.2))]);
       }
+    // pavements run 1.5 m inside each block edge, between the kerb and the building line
+    const walk = STREET / 2 - 1.5;
     const peoplePos: [number, number, number][] = [
-      [u(halfW + 3), 0, u(halfD + 2)],
-      [u(halfW + 4.2), 0, u(halfD + 3.5)],
-      [u(-halfW + 6), 0, u(halfD + 4)],
-      [u(2), 0, u(halfD + 5)],
-      [u(halfW + 1), 0, u(-halfD - 3)],
+      [u(sx[0]! - walk), 0, u(-halfD - 22)],
+      [u(-halfW + 4), 0, u(sz[1]! - walk)],
+      [u(sx[1]! - walk), 0, u(halfD - 3)],
+      [u(sx[1]! + walk), 0, u(-halfD + 6)],
+      [u(halfW + 30), 0, u(sz[1]! + walk)],
+      [u(-halfW - 36), 0, u(sz[0]! - walk)],
+      [u(4), 0, u(sz[0]! + walk)],
     ];
     const riverZ = u(-halfD - STREET - 26 - STREET - 12);
     return { kerbG, dashG, treePos, peoplePos, riverZ };
@@ -491,25 +506,37 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
       water: new THREE.MeshBasicMaterial({ color: "#c8ff2e", transparent: true, opacity: 0 }),
       crown: new THREE.MeshStandardMaterial({ color: "#c8ff2e", roughness: 0.95 }),
       trunk: new THREE.MeshStandardMaterial({ color: "#b9b4aa", roughness: 1 }),
-      person: new THREE.MeshStandardMaterial({ color: "#3a3a38", roughness: 1 }),
+      person: new THREE.MeshStandardMaterial({
+        color: "#3a3a38",
+        roughness: 1,
+        transparent: true,
+        opacity: 0,
+      }),
     }),
     [],
   );
 
   useFrame(() => {
-    const { draw, rise, fill, material } = stages.current;
+    const { draw, rise, trees: grow, people: walkers } = stages.current;
     mats.road.opacity = 0.22 * draw;
     mats.dash.opacity = 0.14 * draw;
     // the lime strip stays hidden in the plan view and fades in once the model tilts
     mats.water.opacity = 0.3 * ease(clamp01((rise - 0.35) / 0.65));
-    const g = ease(fill);
+    const g = grow;
     if (trees.current) {
       trees.current.visible = g > 0.001;
       trees.current.children.forEach((t, i) => {
         t.scale.setScalar(Math.max(0.0001, clamp01(g * 1.4 - (i % 7) * 0.05)));
       });
     }
-    if (people.current) people.current.visible = material > 0.05;
+    mats.person.opacity = walkers;
+    if (people.current) {
+      people.current.visible = walkers > 0.01;
+      people.current.position.y = (1 - walkers) * 0.08;
+      people.current.children.forEach((c) =>
+        c.children.forEach((m) => ((m as THREE.Mesh).castShadow = walkers > 0.6)),
+      );
+    }
   });
 
   return (
@@ -526,7 +553,7 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
               <cylinderGeometry args={[0.018, 0.024, 0.32, 6]} />
             </mesh>
             <mesh position={[0, 0.48, 0]} material={mats.crown} castShadow receiveShadow>
-              <sphereGeometry args={[0.26 + (i % 3) * 0.04, 28, 20]} />
+              <sphereGeometry args={[0.26 + (i % 3) * 0.04, 18, 12]} />
             </mesh>
           </group>
         ))}
@@ -548,7 +575,7 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
 }
 
 function Rig({ progress }: { progress: MutableRefObject<number> }) {
-  const { camera, size } = useThree();
+  const { camera, size, invalidate } = useThree();
   // portrait screens need the camera further back to keep the building in frame
   const aspect = size.width / Math.max(1, size.height);
   const fit = aspect >= 1.2 ? 1 : Math.min(2.2, 1.2 / aspect);
@@ -563,6 +590,7 @@ function Rig({ progress }: { progress: MutableRefObject<number> }) {
     const t2 = easeIO(range(p, 0.78, 1));
     tmp.copy(top).lerp(axo, t1).lerp(close, t2).multiplyScalar(fit);
     camera.position.lerp(tmp, 0.12);
+    if (camera.position.distanceToSquared(tmp) > 1e-6) invalidate();
     look.set(0, 0.6 * t1 + 0.4 * t2, 0);
     camera.lookAt(look);
   });
@@ -575,8 +603,11 @@ function Sun({
 }: {
   stages: MutableRefObject<Stages>;
   onTime?: (h: number) => void;
+  /** receives the scene's invalidate(): the page calls it on scroll, so frames render on demand */
+  kick?: MutableRefObject<(() => void) | null>;
 }) {
   const light = useRef<THREE.DirectionalLight>(null);
+  const small = useThree((st) => st.size.width < 768);
   const last = useRef(-1);
   useFrame(() => {
     const t = stages.current.light; // the day goes from 7:00 to 19:00
@@ -599,12 +630,13 @@ function Sun({
       ref={light}
       castShadow
       intensity={1.2}
-      shadow-mapSize-width={2048}
-      shadow-mapSize-height={2048}
-      shadow-camera-left={-16}
-      shadow-camera-right={16}
-      shadow-camera-top={16}
-      shadow-camera-bottom={-16}
+      shadow-mapSize-width={small ? 1024 : 1536}
+      shadow-mapSize-height={small ? 1024 : 1536}
+      shadow-camera-left={-24}
+      shadow-camera-right={24}
+      shadow-camera-top={24}
+      shadow-camera-bottom={-24}
+      shadow-camera-far={80}
       shadow-bias={-0.0004}
       shadow-normalBias={0.02}
     />
@@ -619,44 +651,63 @@ function Driver({
   progress: MutableRefObject<number>;
   stages: MutableRefObject<Stages>;
 }) {
-  // on load the scene draws its own plan: a short pause while the canvas fades in, then ~2.4 s
-  const intro = useRef(-0.25);
-  useFrame((_, dt) => {
-    if (intro.current < 1) intro.current = Math.min(1, intro.current + Math.min(dt, 0.05) / 2.4);
+  // on load the plan fades in by itself (~1.3 s): the streets and neighbours first, the plot last
+  const intro = useRef(-0.08);
+  const last = useRef(-1);
+  useFrame(({ gl, invalidate }, dt) => {
+    if (intro.current < 1) {
+      intro.current = Math.min(1, intro.current + Math.min(dt, 0.05) / 1.3);
+      invalidate();
+    }
+    // the shadow map is the heaviest pass: redraw it only when the model or the sun changed
+    const key = progress.current + intro.current;
+    gl.shadowMap.needsUpdate = key !== last.current;
+    last.current = key;
     const p = progress.current;
+    const t = intro.current;
+    const scrolled = range(p, 0.02, 0.2);
     stages.current = {
-      draw: Math.max(ease(clamp01(intro.current)), ease(range(p, 0.02, 0.2))),
+      draw: Math.max(ease(clamp01(t / 0.6)), scrolled),
+      main: Math.max(ease(clamp01((t - 0.5) / 0.5)), scrolled),
       rise: easeIO(range(p, 0.22, 0.44)),
       fill: ease(range(p, 0.44, 0.6)),
-      material: ease(range(p, 0.62, 0.78)),
+      material: ease(range(p, 0.6, 0.86)),
       light: range(p, 0.62, 1),
       labels: ease(range(p, 0.04, 0.2)),
+      trees: ease(range(p, 0.46, 0.76)),
+      people: ease(range(p, 0.58, 0.78)),
     };
   });
   return null;
 }
 
-export default function HeroScene({
-  massing,
-  labels,
-  progress,
-  active,
-  onReady,
-  onTime,
-}: HeroSceneProps) {
-  const stages = useRef<Stages>({ draw: 0, rise: 0, fill: 0, material: 0, light: 0, labels: 0 });
+function HeroScene({ massing, labels, progress, active, onReady, onTime, kick }: HeroSceneProps) {
+  const stages = useRef<Stages>({
+    draw: 0,
+    main: 0,
+    rise: 0,
+    fill: 0,
+    material: 0,
+    light: 0,
+    labels: 0,
+    trees: 0,
+    people: 0,
+  });
   return (
     <Canvas
       className="hero-canvas"
       shadows
-      dpr={[1, 1.75]}
-      frameloop={active ? "always" : "never"}
+      dpr={[1, 1.5]}
+      frameloop={active ? "demand" : "never"}
       camera={{ fov: 30, near: 0.1, far: 300, position: [0.001, 30, 0.6] }}
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-      onCreated={({ gl, scene }) => {
+      onCreated={({ gl, scene, invalidate }) => {
+        if (kick) kick.current = () => invalidate();
         scene.background = new THREE.Color("#ffffff");
         scene.fog = new THREE.Fog("#ffffff", 34, 70);
         gl.toneMapping = THREE.NeutralToneMapping;
+        gl.shadowMap.autoUpdate = false;
+        gl.shadowMap.needsUpdate = true;
         onReady?.();
       }}
       aria-hidden="true"
@@ -666,7 +717,7 @@ export default function HeroScene({
       <Sun stages={stages} onTime={onTime} />
       <mesh rotation-x={-Math.PI / 2} receiveShadow>
         <planeGeometry args={[300, 300]} />
-        <shadowMaterial opacity={0.16} />
+        <shadowMaterial opacity={0.11} />
       </mesh>
       <Site massing={massing} stages={stages} />
       <Building massing={massing} stages={stages} labels={labels} />
@@ -674,3 +725,6 @@ export default function HeroScene({
     </Canvas>
   );
 }
+
+// the page re-renders on every stage change; the canvas has no reason to
+export default memo(HeroScene);

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Project } from "@/content/schema";
 import { Axo } from "../Axo";
 import { area, duration, monthYear, regionLabel, statusLabel, typeLabel } from "@/lib/format";
+import { Arrow } from "@/components/Arrow";
 
 /** The content of the map card: drawing, name, architects, client, commission dates, facts. */
 export function CardBody({ p, onClose }: { p: Project; onClose?: () => void }) {
@@ -37,7 +38,7 @@ export function CardBody({ p, onClose }: { p: Project; onClose?: () => void }) {
         </dl>
         <div className="actions">
           <Link href={`/projekty/${p.slug}`} className="u">
-            Detail projektu <span className="arrow">→</span>
+            Detail projektu <Arrow />
           </Link>
           {onClose && (
             <button type="button" className="close u" onClick={onClose}>

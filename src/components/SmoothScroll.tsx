@@ -55,7 +55,7 @@ export function SmoothScroll() {
         return;
       }
       document.documentElement.dataset.leaving = "true";
-      window.setTimeout(() => router.push(target), 320);
+      window.setTimeout(() => router.push(target), 420);
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);

@@ -9,6 +9,7 @@ import { RadialLines } from "@/components/RadialLines";
 import { Magnetic } from "@/components/Magnetic";
 import { featured, projects } from "@/content/projects";
 import { disciplines, recognition, site } from "@/lib/site";
+import { Arrow } from "@/components/Arrow";
 
 export default function Home() {
   const hero = featured[0] ?? projects[0]!;
@@ -101,7 +102,7 @@ export default function Home() {
               pad={0.3}
               plan={false}
               notes={[
-                { vol: 0, text: "Čítárna v parteru · prosklená, 9 m", dx: -0.19, dy: 0.17 },
+                { vol: 0, text: "Prosklená čítárna v přízemí · 9 m", dx: -0.19, dy: 0.17 },
                 { vol: 1, text: "Studovny · horní světlo, 8 m", dx: 0.16, dy: -0.2 },
               ]}
               caption="Skica z první fáze, Knihovna Zábrdovice. Prověřujeme, jak se dvě hmoty skládají na sebe, kudy se vchází a kam dopadá světlo."
@@ -148,7 +149,7 @@ export default function Home() {
         <ScatterGrid items={featured} />
         <p style={{ textAlign: "center", marginTop: "clamp(64px, 8vw, 140px)" }}>
           <Link href="/projekty" className="u">
-            Všechny projekty <span className="arrow">→</span>
+            Všechny projekty <Arrow />
           </Link>
         </p>
       </section>
@@ -166,7 +167,7 @@ export default function Home() {
               autory, klienta a dobu zakázky.
             </p>
             <Link href="/mapa" className="btn btn-ghost">
-              Otevřít mapu <span className="arrow">→</span>
+              Otevřít mapu <Arrow />
             </Link>
           </div>
         </div>
@@ -204,7 +205,7 @@ export default function Home() {
           </h2>
           <Magnetic>
             <Link href="/kontakt#poptavka" className="btn btn-lime">
-              Začít projekt <span className="arrow">→</span>
+              Začít projekt <Arrow />
             </Link>
           </Magnetic>
         </section>

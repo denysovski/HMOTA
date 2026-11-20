@@ -333,20 +333,85 @@ ol {
   border-color: var(--lime);
 }
 .btn-lime:hover {
-  background: var(--paper);
-  border-color: var(--paper);
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
 }
 .btn-ghost:hover {
   background: var(--fg);
   color: var(--bg);
 }
 
+/* the one arrow: black on a lime circle; on hover the colours swap and the arrow nudges */
 .arrow {
-  display: inline-block;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.55em;
+  height: 1.55em;
+  min-width: 22px;
+  min-height: 22px;
+  margin-left: 0.15em;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--ink);
+  vertical-align: middle;
+  transition:
+    background-color 260ms var(--ease-out),
+    color 260ms var(--ease-out);
+}
+.arrow svg {
+  width: 58%;
+  height: 58%;
   transition: transform 300ms var(--ease-out);
 }
-a:hover .arrow {
-  transform: translateX(3px);
+a:hover .arrow,
+button:hover .arrow,
+a:focus-visible .arrow {
+  background: var(--ink);
+  color: var(--lime);
+}
+a:hover .arrow svg,
+button:hover .arrow svg {
+  transform: translateX(2px);
+}
+/* inside a lime button the circle is ink, so it never disappears into the button */
+.btn-lime .arrow {
+  background: var(--ink);
+  color: var(--lime);
+}
+.btn-lime:hover .arrow {
+  background: var(--lime);
+  color: var(--ink);
+}
+.ink .arrow,
+[data-theme="dark"] .arrow {
+  background: var(--lime);
+  color: var(--ink);
+}
+.ink a:hover .arrow {
+  background: var(--paper);
+  color: var(--ink);
+}
+.next-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  margin-top: 12px;
+}
+.next-link .arrow {
+  width: 1.05em;
+  height: 1.05em;
+}
+.next-link-text {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat;
+  transition:
+    background-size 420ms var(--ease-out),
+    color 260ms var(--ease-out);
+}
+.next-link:hover .next-link-text {
+  background-size: 100% 2px;
+  color: #3f7a00;
 }
 
 /* ---------- page transitions ---------- */
@@ -361,6 +426,44 @@ html[data-leaving="true"] main,
 html[data-leaving="true"] .site-footer {
   opacity: 0;
   transform: translateY(-14px);
+}
+/* a white veil and a thin lime loading line between two pages */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  opacity: 0;
+}
+body::after {
+  inset: 0;
+  z-index: 40;
+  background: var(--paper);
+  transition: opacity 480ms var(--ease-io);
+}
+body::before {
+  left: 0;
+  top: 0;
+  z-index: 60;
+  width: 100%;
+  height: 2px;
+  background: var(--lime);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition:
+    transform 0s 480ms,
+    opacity 300ms;
+}
+html[data-leaving="true"] body::after {
+  opacity: 1;
+  transition-duration: 380ms;
+}
+html[data-leaving="true"] body::before {
+  opacity: 1;
+  transform: scaleX(0.85);
+  transition:
+    transform 1.6s cubic-bezier(0.1, 0.7, 0.2, 1),
+    opacity 200ms;
 }
 
 /* ---------- header ---------- */
@@ -386,6 +489,10 @@ html[data-leaving="true"] .site-footer {
   color: var(--nav-active);
   background-size: 100% 1px;
   background-position: 0 100%;
+}
+.site-nav ul:has(a:hover) a[aria-current="page"]:not(:hover) {
+  background-size: 0 1px;
+  background-position: 100% 100%;
 }
 .site-header > * {
   pointer-events: auto;
@@ -660,11 +767,53 @@ html[data-leaving="true"] .site-footer {
   z-index: 1;
   pointer-events: none;
 }
-.hero-labels .hero-tag {
+.hero-tag-anchor {
   position: absolute;
   left: 0;
   top: 0;
+  padding: 26px 34px; /* an invisible margin, so the label notices the cursor nearby */
   will-change: transform, opacity;
+}
+.hero-tag-anchor .hero-tag {
+  display: inline-flex;
+  cursor: default;
+  transition:
+    transform 380ms var(--ease-out),
+    background-color 260ms var(--ease-out),
+    color 260ms var(--ease-out),
+    box-shadow 260ms var(--ease-out);
+}
+.hero-tag-anchor:hover .hero-tag-main {
+  background: var(--lime);
+  color: var(--ink);
+  box-shadow: 0 10px 26px rgb(10 10 10 / 0.22);
+}
+.hero-tag-anchor:hover .hero-tag-main::before {
+  background: var(--ink);
+  box-shadow: 0 0 0 3px rgb(10 10 10 / 0.12);
+}
+.hero-ring {
+  position: absolute;
+  left: var(--pad);
+  bottom: calc(var(--pad) + clamp(40px, 5.8vw, 108px) * 2.7 + 18px);
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.hero-ring circle {
+  fill: none;
+  stroke-width: 6;
+}
+.hero-ring-track {
+  stroke: rgb(10 10 10 / 0.08);
+}
+.hero-ring-fill {
+  stroke: var(--lime);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 160ms linear;
 }
 .hero-fade {
   /* a soft white wash behind the studio name, so it reads over the model */
@@ -715,30 +864,31 @@ html[data-leaving="true"] .site-footer {
 .hero-stages {
   position: relative;
   display: flex;
-  gap: 16px;
+  gap: 2px;
   justify-content: flex-end;
   margin-top: 8px;
-  padding-left: 13px;
 }
 .hero-stages li {
+  position: relative;
+  z-index: 1;
+  padding: 4px 10px;
   font-size: var(--t-xs);
   color: var(--label);
-  transition: color 600ms var(--ease-out);
+  transition: color 500ms var(--ease-out);
 }
 .hero-stages li[data-active="true"] {
-  color: var(--ink);
+  color: var(--paper);
 }
-.hero-dot {
+.hero-pill {
   position: absolute;
   left: 0;
   top: 50%;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--lime);
-  border: 1px solid rgb(10 10 10 / 0.35);
+  height: 100%;
+  border-radius: 999px;
+  background: #3f7a00;
   transition:
     transform 650ms var(--ease-out),
+    width 650ms var(--ease-out),
     opacity 400ms;
   pointer-events: none;
 }
@@ -1285,6 +1435,50 @@ html[data-leaving="true"] .site-footer {
   font-size: var(--t-md);
   letter-spacing: -0.02em;
 }
+/* list view: a picture of the hovered project trails the cursor */
+.list-preview {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 30;
+  width: 240px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 260ms var(--ease-out);
+  will-change: transform, opacity;
+}
+.list-preview[data-show="true"] {
+  opacity: 1;
+}
+.list-preview figure {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  margin: 0;
+  padding: 10px 10px 8px;
+  background: var(--paper-2);
+  border-radius: 12px;
+  box-shadow: 0 20px 44px -22px rgb(0 0 0 / 0.4);
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 240ms var(--ease-out),
+    transform 320ms var(--ease-out);
+}
+.list-preview figure[data-on="true"] {
+  opacity: 1;
+  transform: none;
+}
+.list-preview figcaption {
+  margin-top: 6px;
+  font-size: var(--t-xs);
+  color: var(--label);
+}
+@media (hover: none), (pointer: coarse) {
+  .list-preview {
+    display: none;
+  }
+}
 
 /* filtering: results swap in, empty state rises in */
 .swap {
@@ -1368,7 +1562,7 @@ html[data-leaving="true"] .site-footer {
 .map-hud {
   position: absolute;
   left: var(--pad);
-  top: calc(var(--header-h) + 8px);
+  top: calc(var(--header-h) + 96px); /* ~110 px of air under the wordmark */
   z-index: 3;
   max-width: 520px;
 }
@@ -1390,6 +1584,82 @@ html[data-leaving="true"] .site-footer {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  align-items: center;
+}
+.legend-info {
+  position: relative;
+  display: inline-flex;
+}
+.info-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  cursor: help;
+  transition:
+    background-color 220ms var(--ease-out),
+    border-color 220ms var(--ease-out);
+}
+.info-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.info-btn:hover,
+.info-btn:focus-visible {
+  background: var(--lime);
+  border-color: var(--lime);
+}
+.legend-tip {
+  position: absolute;
+  left: -6px;
+  bottom: calc(100% + 12px);
+  display: grid;
+  gap: 8px;
+  width: 300px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.5);
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition:
+    opacity 220ms var(--ease-out),
+    transform 260ms var(--ease-out),
+    visibility 0s 220ms;
+  pointer-events: none;
+}
+.legend-tip::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 100%;
+  border: 6px solid transparent;
+  border-top-color: var(--ink);
+}
+.legend-tip .status-chip::before {
+  border-color: rgb(255 255 255 / 0.7);
+}
+.legend-tip-note {
+  font-size: var(--t-xs);
+  color: rgb(255 255 255 / 0.6);
+}
+.legend-info:hover .legend-tip,
+.info-btn:focus-visible + .legend-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 260ms var(--ease-out),
+    transform 300ms var(--ease-out),
+    visibility 0s;
 }
 .map-controls {
   position: absolute;
@@ -1563,25 +1833,32 @@ html[data-leaving="true"] .site-footer {
   box-shadow: 0 24px 48px -24px rgb(0 0 0 / 0.4);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(10px) scale(0.94);
-  clip-path: inset(0 0 18% 0 round 14px);
+  transform: translateY(6px);
   transition:
-    opacity 260ms var(--ease-out),
-    transform 460ms var(--ease-out),
-    clip-path 520ms var(--ease-out),
-    visibility 0s 460ms;
+    opacity 220ms var(--ease-out),
+    transform 260ms var(--ease-out),
+    visibility 0s 220ms;
+  pointer-events: none;
 }
 .map-card[data-show="true"] {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: none;
-  clip-path: inset(0 0 0 0 round 14px);
   transition:
-    opacity 260ms var(--ease-out),
-    transform 460ms var(--ease-out),
-    clip-path 520ms var(--ease-out),
+    opacity 320ms var(--ease-out),
+    transform 380ms var(--ease-out),
     visibility 0s;
+}
+/* switching from one project to the next: the new content fades in over the old frame */
+.map-card-swap {
+  animation: card-swap 320ms var(--ease-out);
+}
+@keyframes card-swap {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 .map-card-pos[data-docked="true"] .map-card {
   width: 340px;
@@ -1651,6 +1928,46 @@ html[data-leaving="true"] .site-footer {
 .team {
   row-gap: clamp(48px, 6vw, 96px);
 }
+.team-wrap {
+  position: relative;
+}
+.social-scatter {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .social-scatter {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+}
+.social-dot {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--ink);
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+  transition:
+    background-color 260ms var(--ease-out),
+    color 260ms var(--ease-out),
+    transform 380ms var(--ease-out);
+}
+.social-dot svg {
+  width: 26px;
+  height: 26px;
+}
+.social-dot:hover,
+.social-dot:focus-visible {
+  background: var(--ink);
+  color: var(--lime);
+  transform: translate(-50%, -50%) scale(1.06);
+}
 .person .avatar {
   width: 100%;
   height: auto;
@@ -1715,17 +2032,29 @@ html[data-leaving="true"] .site-footer {
   border-radius: 0;
   background: transparent;
   font-size: var(--t-base);
+  transition:
+    border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
 }
 .field textarea {
   min-height: 140px;
   resize: vertical;
 }
+.field label {
+  transition: color 200ms var(--ease-out);
+}
+/* focus: the field's own rule turns lime and thickens; no tint, no travelling bar */
 .field input:focus-visible,
 .field select:focus-visible,
-.field textarea:focus-visible {
-  outline: none; /* proui-ignore AX-06: replaced by a 2px rule and a tinted field */
-  border-bottom-width: 2px;
-  background: var(--paper-2);
+.field textarea:focus-visible,
+.field input:focus,
+.field textarea:focus {
+  outline: none; /* proui-ignore AX-06: replaced by a 2px lime rule and an ink label */
+  border-bottom-color: #8fc400;
+  box-shadow: 0 1px 0 0 #8fc400;
+}
+.field:focus-within label {
+  color: var(--ink);
 }
 .field [aria-invalid="true"] {
   border-bottom-color: #b42318;
@@ -1737,20 +2066,6 @@ html[data-leaving="true"] .site-footer {
 }
 .form {
   position: relative;
-}
-.focus-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 2px;
-  background: var(--lime);
-  box-shadow: 0 0 0 0.5px rgb(10 10 10 / 0.35);
-  pointer-events: none;
-  z-index: 2;
-  transition:
-    transform 520ms var(--ease-out),
-    width 520ms var(--ease-out),
-    opacity 300ms;
 }
 .select {
   position: relative;
@@ -1765,10 +2080,15 @@ html[data-leaving="true"] .site-footer {
   border-bottom: 1px solid var(--ink);
   font-size: var(--t-base);
   text-align: left;
+  transition:
+    border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
 }
-.select-button:focus-visible {
+.select-button:focus-visible,
+.select[data-open="true"] .select-button {
   outline: none;
-  background: var(--paper-2);
+  border-bottom-color: #8fc400;
+  box-shadow: 0 1px 0 0 #8fc400;
 }
 .select-chevron {
   width: 9px;
@@ -1790,9 +2110,9 @@ html[data-leaving="true"] .site-footer {
   z-index: 10;
   padding: 6px;
   background: var(--paper);
-  border: 1px solid var(--ink);
+  border: 1px solid rgb(10 10 10 / 0.1);
   border-radius: 14px;
-  box-shadow: 0 24px 48px -24px rgb(0 0 0 / 0.35);
+  box-shadow: 0 24px 48px -24px rgb(0 0 0 / 0.28);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px) scale(0.98);
@@ -2025,6 +2345,13 @@ html[data-leaving="true"] .site-footer {
   .hero-hint {
     width: calc(100% - 2 * var(--pad));
   }
+  .hero-ring {
+    left: auto;
+    right: var(--pad);
+    bottom: var(--pad);
+    width: 32px;
+    height: 32px;
+  }
   /* on phones only the building's own names stay; neighbours and dimensions would crowd it */
   .hero-tag:not(.hero-tag-main) {
     display: none;
@@ -2034,6 +2361,7 @@ html[data-leaving="true"] .site-footer {
     margin-bottom: 10px;
   }
   .map-hud {
+    top: calc(var(--header-h) + 28px);
     right: 0;
     max-width: none;
   }
@@ -2096,6 +2424,10 @@ html.js .reveal {
   }
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 /* the map is a single full-screen view: no footer, only the side list scrolls (desktop) */
 body:has(.map-page) .site-footer {
   display: none;
@@ -2105,5 +2437,29 @@ body:has(.map-page) .site-footer {
   body:has(.map-page) {
     height: 100%;
     overflow: hidden;
+  }
+}
+
+/* the map arrives in two soft steps: the list slides in, then the title and filters rise */
+.map-side {
+  animation: map-side-in 800ms var(--ease-out) 120ms both;
+}
+.map-hud {
+  animation: map-hud-in 800ms var(--ease-out) 260ms both;
+}
+.map-legend,
+.map-controls {
+  animation: map-hud-in 700ms var(--ease-out) 420ms both;
+}
+@keyframes map-side-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes map-hud-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
   }
 }

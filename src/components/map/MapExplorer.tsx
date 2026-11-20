@@ -16,6 +16,7 @@ import type { MapSceneHandle } from "./MapScene";
 import { CardBody } from "./CardBody";
 import { CzMapSvg } from "./CzMapSvg";
 import { area, duration, monthYear, regionLabel } from "@/lib/format";
+import { Arrow } from "@/components/Arrow";
 
 const MapScene = dynamic(() => import("./MapScene"), { ssr: false, loading: () => null });
 
@@ -76,13 +77,23 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
     router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
   };
 
+  // leaving a pin closes its card only after a short grace period, so the cursor can travel
+  // from the pin into the card (and click "Detail projektu") without the card vanishing
+  const leave = useRef<number | undefined>(undefined);
   const setHovered = useCallback((slug: string | null) => {
-    setHoveredState(slug);
-    if (slug) setCardSlug(slug);
+    window.clearTimeout(leave.current);
+    if (slug) {
+      setHoveredState(slug);
+      setCardSlug(slug);
+    } else {
+      leave.current = window.setTimeout(() => setHoveredState(null), 260);
+    }
   }, []);
+  useEffect(() => () => window.clearTimeout(leave.current), []);
 
   // on touch screens a hover never happens: the card opens on tap (select) only
-  const focus = narrow ? selected : (hovered ?? selected);
+  // once a pin is clicked, it alone owns the card: hovering other pins or rows does not swap it
+  const focus = narrow ? selected : (selected ?? hovered);
   const focusRef = useRef<string | null>(null);
   useEffect(() => {
     focusRef.current = focus;
@@ -247,7 +258,7 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
             ref={scene}
             projects={projects}
             visible={visible}
-            hovered={narrow ? null : hovered}
+            hovered={narrow || selected ? null : hovered}
             selected={selected}
             onHover={narrow ? () => {} : setHovered}
             onSelect={select}
@@ -270,7 +281,30 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
           <span className="status-chip" data-status="soutez">
             Soutěž
           </span>
-          <span>Reliéf je stylizovaný</span>
+          <span className="legend-info">
+            <button type="button" className="info-btn" aria-describedby="legend-tip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="12" r="9.5" />
+                <path d="M12 11v6" strokeLinecap="round" />
+                <circle cx="12" cy="7.6" r="0.6" fill="currentColor" stroke="none" />
+              </svg>
+              <span className="sr-only">Vysvětlivky</span>
+            </button>
+            <span className="legend-tip" role="tooltip" id="legend-tip">
+              <span className="status-chip" data-status="realizace">
+                Realizováno · plné limetkové kolečko, stavba stojí
+              </span>
+              <span className="status-chip" data-status="vystavba">
+                Ve výstavbě · černý obrys s limetkovým lemem
+              </span>
+              <span className="status-chip" data-status="soutez">
+                Soutěž · prázdné kolečko, návrh do soutěže
+              </span>
+              <span className="legend-tip-note">
+                Reliéf terénu je stylizovaný a převýšený, aby byl čitelný.
+              </span>
+            </span>
+          </span>
         </div>
         {gl && (
           <div className="map-controls">
@@ -298,7 +332,11 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
             aria-label={current?.name}
           >
             {narrow && <span className="sheet-grip" aria-hidden="true" />}
-            {current && <CardBody p={current} onClose={selected ? close : undefined} />}
+            {current && (
+              <div key={current.slug} className="map-card-swap">
+                <CardBody p={current} onClose={selected ? close : undefined} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -353,7 +391,7 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
                           <dd className="num">{area(p.areaM2)}</dd>
                         </dl>
                         <Link href={`/projekty/${p.slug}`} className="u" tabIndex={open ? 0 : -1}>
-                          Detail projektu <span className="arrow">→</span>
+                          Detail projektu <Arrow />
                         </Link>
                       </div>
                     </div>

@@ -6,6 +6,7 @@ import type { Project } from "@/content/schema";
 import { CzMapSvg } from "./map/CzMapSvg";
 import { svgMap } from "@/lib/geo";
 import { area, duration, statusLabel, year } from "@/lib/format";
+import { Arrow } from "@/components/Arrow";
 
 const W = 1000;
 const H = 620;
@@ -151,7 +152,7 @@ export function MapTeaser({ projects }: { projects: Project[] }) {
               className="teaser-bubble-link"
               tabIndex={open ? 0 : -1}
             >
-              Detail projektu <span className="arrow">→</span>
+              Detail projektu <Arrow />
             </Link>
           </>
         )}

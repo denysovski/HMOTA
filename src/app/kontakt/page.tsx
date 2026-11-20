@@ -38,7 +38,7 @@ export default function ContactPage() {
             ))}
           </address>
           <p className="label">Odpovídáme</p>
-          <p>do dvou pracovních dnů</p>
+          <p>Do dvou pracovních dnů</p>
         </div>
         <div className="contact-form">
           <ContactForm />
