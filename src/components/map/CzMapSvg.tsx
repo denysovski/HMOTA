@@ -64,7 +64,7 @@ export function CzMapSvg({
           const on = highlight === p.slug;
           const r = on ? 8.5 : 6;
           const fill = p.status === "realizace" ? "#c8ff2e" : "#ffffff";
-          const stroke = p.status === "vystavba" ? "#8fc400" : "#0a0a0a";
+          const stroke = p.status === "vystavba" ? "#c8ff2e" : "#0a0a0a";
           return (
             <g key={p.slug} className={pinClassName} {...(onPinProps ? onPinProps(p.slug) : {})}>
               <line

@@ -409,9 +409,11 @@ button:hover .arrow svg {
     background-size 420ms var(--ease-out),
     color 260ms var(--ease-out);
 }
+.next-link-text {
+  background-image: linear-gradient(var(--lime), var(--lime));
+}
 .next-link:hover .next-link-text {
-  background-size: 100% 2px;
-  color: #3f7a00;
+  background-size: 100% 0.14em;
 }
 
 /* ---------- page transitions ---------- */
@@ -479,7 +481,7 @@ html[data-leaving="true"] body::before {
   color: var(--ink);
   pointer-events: none;
   transition: color 400ms var(--ease-out);
-  --nav-active: #3f7a00; /* green that stays readable on white (5.3:1) */
+  --nav-active: var(--ink); /* on white the current link is marked by a lime rule, not lime text */
 }
 .site-header[data-theme="dark"] {
   color: var(--paper);
@@ -487,11 +489,12 @@ html[data-leaving="true"] body::before {
 }
 .site-nav a[aria-current="page"] {
   color: var(--nav-active);
-  background-size: 100% 1px;
+  background-image: linear-gradient(var(--lime), var(--lime));
+  background-size: 100% 2px;
   background-position: 0 100%;
 }
 .site-nav ul:has(a:hover) a[aria-current="page"]:not(:hover) {
-  background-size: 0 1px;
+  background-size: 0 2px;
   background-position: 100% 100%;
 }
 .site-header > * {
@@ -2050,8 +2053,8 @@ html[data-leaving="true"] body::before {
 .field input:focus,
 .field textarea:focus {
   outline: none; /* proui-ignore AX-06: replaced by a 2px lime rule and an ink label */
-  border-bottom-color: #8fc400;
-  box-shadow: 0 1px 0 0 #8fc400;
+  border-bottom-color: var(--lime);
+  box-shadow: 0 1px 0 0 var(--lime);
 }
 .field:focus-within label {
   color: var(--ink);
@@ -2087,8 +2090,8 @@ html[data-leaving="true"] body::before {
 .select-button:focus-visible,
 .select[data-open="true"] .select-button {
   outline: none;
-  border-bottom-color: #8fc400;
-  box-shadow: 0 1px 0 0 #8fc400;
+  border-bottom-color: var(--lime);
+  box-shadow: 0 1px 0 0 var(--lime);
 }
 .select-chevron {
   width: 9px;

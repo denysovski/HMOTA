@@ -18,7 +18,7 @@ export interface HeroSceneProps {
 }
 
 const SCALE = 0.1; // metres to scene units
-const LIME = new THREE.Color("#8fc400");
+const LIME = new THREE.Color("#c8ff2e");
 const INK = new THREE.Color("#0a0a0a");
 const CLAY = new THREE.Color("#f4f3f0");
 const CONCRETE = new THREE.Color("#cdc9c1");
@@ -125,7 +125,7 @@ function Callout({
     [],
   );
   const dotMat = useMemo(
-    () => new THREE.MeshBasicMaterial({ color: "#b8f000", transparent: true, opacity: 0 }),
+    () => new THREE.MeshBasicMaterial({ color: "#c8ff2e", transparent: true, opacity: 0 }),
     [],
   );
   useFrame(() => {

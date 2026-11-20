@@ -17,7 +17,7 @@ const SLAB = 0.42; // thickness of the plinth under the relief
 const PIN_H = 0.72;
 const HEAD = 0.15;
 const LIME = "#c8ff2e";
-const LIME_DARK = "#8fc400";
+const LIME_DARK = "#c8ff2e"; // one green across the site
 const INK = "#0a0a0a";
 
 const HOME = {

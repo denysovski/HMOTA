@@ -163,7 +163,7 @@ export function Axo({
                   iso(v.x + v.w + 1.2, 0, v.z + v.d + 1.2),
                   iso(v.x - 1.2, 0, v.z + v.d + 1.2),
                 ])}
-                stroke="#9ccc00"
+                stroke="#c8ff2e"
                 strokeWidth={1}
                 vectorEffect="non-scaling-stroke"
               />
