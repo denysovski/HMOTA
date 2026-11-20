@@ -550,17 +550,17 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
       lines.some((c) => Math.abs(v - c) < STREET / 2 + 2);
     let k = 0;
     for (const x of sx)
-      for (let z = -80; z <= 80; z += 10) {
+      for (let z = -80; z <= 80; z += 14) {
         if (inCrossing(z, sz)) continue;
         for (const side of [-1, 1])
-          if (rnd(k++) > 0.35)
+          if (rnd(k++) > 0.68)
             treePos.push([u(x + side * (STREET / 2 - 1.2)), 0, u(z + rnd(k) * 2)]);
       }
     for (const z of sz)
-      for (let x = -80; x <= 80; x += 10) {
+      for (let x = -80; x <= 80; x += 14) {
         if (inCrossing(x, sx)) continue;
         for (const side of [-1, 1])
-          if (rnd(k++) > 0.35)
+          if (rnd(k++) > 0.68)
             treePos.push([u(x + rnd(k) * 2), 0, u(z + side * (STREET / 2 - 1.2))]);
       }
     const peoplePos: [number, number, number][] = [
@@ -579,21 +579,19 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
       road: new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0 }),
       dash: new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0 }),
       water: new THREE.MeshBasicMaterial({ color: "#c8ff2e", transparent: true, opacity: 0 }),
-      crown: new THREE.MeshStandardMaterial({ color: "#f2f2ee", roughness: 1 }),
+      crown: new THREE.MeshStandardMaterial({ color: "#c8ff2e", roughness: 0.95 }),
       trunk: new THREE.MeshStandardMaterial({ color: "#b9b4aa", roughness: 1 }),
       person: new THREE.MeshStandardMaterial({ color: "#3a3a38", roughness: 1 }),
     }),
     [],
   );
-  const green = useMemo(() => new THREE.Color("#cfdcc0"), []);
-  const white = useMemo(() => new THREE.Color("#f2f2ee"), []);
 
   useFrame(() => {
-    const { draw, fill, material } = stages.current;
+    const { draw, rise, fill, material } = stages.current;
     mats.road.opacity = 0.22 * draw;
     mats.dash.opacity = 0.14 * draw;
-    mats.water.opacity = 0.3 * draw;
-    mats.crown.color.copy(white).lerp(green, material);
+    // the lime strip stays hidden in the plan view and fades in once the model tilts
+    mats.water.opacity = 0.3 * ease(clamp01((rise - 0.35) / 0.65));
     const g = ease(fill);
     if (trees.current) {
       trees.current.visible = g > 0.001;
