@@ -39,43 +39,6 @@ interface Props {
 }
 
 /** The scroll-built building: plan, section, massing, material, light. Pinned with CSS sticky. */
-/**
- * The first stage as a flat plan, in the same scale and framing as the 3D camera's top view,
- * so a reload shows the start of the build (not the finished building) until the 3D is ready.
- */
-function PlanPoster({ massing }: { massing: Volume[] }) {
-  const minX = Math.min(...massing.map((v) => v.x));
-  const maxX = Math.max(...massing.map((v) => v.x + v.w));
-  const minZ = Math.min(...massing.map((v) => v.z));
-  const maxZ = Math.max(...massing.map((v) => v.z + v.d));
-  const cx = (minX + maxX) / 2;
-  const cz = (minZ + maxZ) / 2;
-  const H = 160; // metres visible top to bottom from the 3D top view
-  return (
-    <svg
-      viewBox={`${-H} ${-H / 2} ${2 * H} ${H}`}
-      preserveAspectRatio="xMidYMid slice"
-      className="hero-plan"
-      aria-hidden="true"
-    >
-      <g fill="none" stroke="#8fc400" strokeWidth={0.2}>
-        {massing
-          .filter((v) => v.y === 0)
-          .map((v, i) => (
-            <rect key={i} pathLength={1} x={v.x - cx} y={v.z - cz} width={v.w} height={v.d} />
-          ))}
-        <rect
-          pathLength={1}
-          x={minX - cx - 2.5}
-          y={minZ - cz - 2.5}
-          width={maxX - minX + 5}
-          height={maxZ - minZ + 5}
-        />
-      </g>
-    </svg>
-  );
-}
-
 export function HeroModel({ massing, poster, title, projectName }: Props) {
   const root = useRef<HTMLElement>(null);
   const progress = useRef(0);
@@ -168,7 +131,7 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
     <section className="hero" ref={root} aria-label="Úvod">
       <div className="hero-stage">
         <div className="hero-poster" data-hidden={ready ? "true" : "false"}>
-          {still ? poster : <PlanPoster massing={massing} />}
+          {still ? poster : null}
         </div>
         {enabled && (
           <HeroScene
@@ -177,9 +140,8 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
             progress={progress}
             active={active}
             onReady={() => {
-              // let the poster finish drawing the plan before the 3D takes over
-              const wait = Math.max(0, 2500 - (performance.now() - mounted.current));
-              window.setTimeout(() => setReady(true), wait);
+              // the scene starts empty and draws the plan itself, so it can take over at once
+              setReady(true);
             }}
             onTime={setHour}
           />

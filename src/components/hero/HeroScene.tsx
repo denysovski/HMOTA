@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useRef, type MutableRefObject, type ReactNode } from "react";
+import { useMemo, useRef, type MutableRefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { Volume } from "@/content/schema";
 
@@ -91,35 +90,6 @@ function context(b: Ctx) {
   });
 }
 
-/** a DOM label pinned to a 3D point, faded by the frame loop */
-function Tag({
-  position,
-  opacity,
-  children,
-  className = "hero-tag",
-}: {
-  position: [number, number, number];
-  opacity: () => number;
-  children: ReactNode;
-  className?: string;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  useFrame(() => {
-    const o = opacity();
-    if (ref.current) {
-      ref.current.style.opacity = o.toFixed(3);
-      ref.current.style.transform = `translateY(${((1 - o) * 6).toFixed(1)}px)`;
-    }
-  });
-  return (
-    <Html position={position} center zIndexRange={[3, 0]} pointerEvents="none">
-      <div ref={ref} className={className} style={{ opacity: 0 }}>
-        {children}
-      </div>
-    </Html>
-  );
-}
-
 /**
  * A label held away from the building, joined to the top of a volume by a hairline. The anchor
  * follows the volume as it rises, so the label and its line travel up with the building.
@@ -182,11 +152,6 @@ function Callout({
     </>
   );
 }
-
-/** dimensions are a plan-and-section thing: shown at the start, gone once the clay fills in */
-const dimFade = (st: Stages) => ease(clamp01(st.rise * 1.4)) * (1 - ease(clamp01(st.fill * 1.6)));
-
-const fmt = (m: number) => `${m.toFixed(1).replace(".", ",")} m`;
 
 function Building({
   massing,
@@ -339,50 +304,6 @@ function Building({
     [],
   );
 
-  // dimension lines for the largest volume: width, depth and height
-  const main = massing.reduce((a, v) => (v.w * v.d * v.h > a.w * a.d * a.h ? v : a));
-  const dims = useMemo(() => {
-    const x0 = (main.x - cx) * SCALE;
-    const x1 = (main.x + main.w - cx) * SCALE;
-    const z0 = (main.z - cz) * SCALE;
-    const z1 = (main.z + main.d - cz) * SCALE;
-    const H = (main.y + main.h) * SCALE;
-    const off = 0.22; // inside the plot, clear of the street
-    const t = 0.12;
-    // prettier-ignore
-    const pts = [
-      x0, 0.01, z0 - off, x1, 0.01, z0 - off,
-      x0, 0.01, z0 - off - t, x0, 0.01, z0 - off + t,
-      x1, 0.01, z0 - off - t, x1, 0.01, z0 - off + t,
-      x0 - off, 0.01, z0, x0 - off, 0.01, z1,
-      x0 - off - t, 0.01, z0, x0 - off + t, 0.01, z0,
-      x0 - off - t, 0.01, z1, x0 - off + t, 0.01, z1,
-      x0 - off, 0, z0 - off, x0 - off, H, z0 - off,
-      x0 - off - t, H, z0 - off, x0 - off + t, H, z0 - off,
-    ];
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
-    return {
-      g,
-      w: {
-        pos: [(x0 + x1) / 2, 0.05, z0 - off - 0.32] as [number, number, number],
-        text: fmt(main.w),
-      },
-      d: {
-        pos: [x0 - off - 0.45, 0.05, (z0 + z1) / 2] as [number, number, number],
-        text: fmt(main.d),
-      },
-      h: {
-        pos: [x0 - off - 0.45, H / 2, z0 - off] as [number, number, number],
-        text: fmt(main.y + main.h),
-      },
-    };
-  }, [main, cx, cz]);
-  const dimMat = useMemo(
-    () => new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0 }),
-    [],
-  );
-
   useFrame(() => {
     const { draw, rise, fill, material } = stages.current;
     plan.setDrawRange(0, Math.floor((planCount * draw) / 2) * 2);
@@ -390,7 +311,6 @@ function Building({
     // neighbours stay a faint ghost: a hint of the street, never competing with the building
     ctx.ghostMat.opacity = 0.1 * rise;
     ctx.clayMat.opacity = 0.12 * fill;
-    dimMat.opacity = 0.75 * dimFade(stages.current);
     for (const part of parts) {
       if (part.mesh) part.mesh.castShadow = fill > 0.5;
       part.edgeMat.opacity = rise > 0 ? 0.9 - 0.45 * material : 0;
@@ -418,7 +338,6 @@ function Building({
       <lineSegments geometry={ctx.pg} material={contextPlanMat} />
       <primitive object={ctx.ghost} />
       <lineSegments geometry={plan} material={planMat} />
-      <lineSegments geometry={dims.g} material={dimMat} />
       {parts.map((part, i) => (
         <group key={i} position={part.pos} userData={{ part: true, baseY: part.pos.y }}>
           <mesh
@@ -454,15 +373,6 @@ function Building({
             />
           );
         })}
-      <Tag position={dims.w.pos} opacity={() => dimFade(s.current)} className="hero-tag hero-dim">
-        {dims.w.text}
-      </Tag>
-      <Tag position={dims.d.pos} opacity={() => dimFade(s.current)} className="hero-tag hero-dim">
-        {dims.d.text}
-      </Tag>
-      <Tag position={dims.h.pos} opacity={() => dimFade(s.current)} className="hero-tag hero-dim">
-        {dims.h.text}
-      </Tag>
     </group>
   );
 }
@@ -709,12 +619,13 @@ function Driver({
   progress: MutableRefObject<number>;
   stages: MutableRefObject<Stages>;
 }) {
-  // the plan was already drawn by the flat poster underneath, so the scene starts with it complete
-  const intro = useRef(1);
-  useFrame(() => {
+  // on load the scene draws its own plan: a short pause while the canvas fades in, then ~2.4 s
+  const intro = useRef(-0.25);
+  useFrame((_, dt) => {
+    if (intro.current < 1) intro.current = Math.min(1, intro.current + Math.min(dt, 0.05) / 2.4);
     const p = progress.current;
     stages.current = {
-      draw: Math.max(ease(intro.current), ease(range(p, 0.02, 0.2))),
+      draw: Math.max(ease(clamp01(intro.current)), ease(range(p, 0.02, 0.2))),
       rise: easeIO(range(p, 0.22, 0.44)),
       fill: ease(range(p, 0.44, 0.6)),
       material: ease(range(p, 0.62, 0.78)),
