@@ -31,7 +31,11 @@ function setQuery(next: URLSearchParams) {
 }
 
 export function ProjectIndex({ projects }: { projects: Project[] }) {
-  const search = useSyncExternalStore(subscribe, () => window.location.search, () => "");
+  const search = useSyncExternalStore(
+    subscribe,
+    () => window.location.search,
+    () => "",
+  );
   const params = new URLSearchParams(search);
   const type = params.get("typ") as ProjectType | null;
   const status = params.get("stav") as ProjectStatus | null;
@@ -105,38 +109,44 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
           </Link>
         </div>
       </div>
-      <p className="label" aria-live="polite" style={{ margin: "14px 0 clamp(40px, 5vw, 80px)" }}>
+      <p
+        className="label count"
+        aria-live="polite"
+        style={{ margin: "14px 0 clamp(40px, 5vw, 80px)" }}
+      >
         Zobrazeno {list.length} z {projects.length}
       </p>
-      {list.length === 0 ? (
-        <p className="statement" style={{ paddingBottom: "20vh" }}>
-          Tomuto výběru neodpovídá žádný projekt.{" "}
-          <button
-            type="button"
-            className="u"
-            onClick={() => setQuery(new URLSearchParams())}
-          >
-            Zrušit filtry
-          </button>
-        </p>
-      ) : view === "mrizka" ? (
-        <ScatterGrid key={`${type}-${status}`} items={list} />
-      ) : (
-        <ul className="plist">
-          {list.map((p) => (
-            <li key={p.slug}>
-              <Link href={`/projekty/${p.slug}`}>
-                <span className="name">{p.name}</span>
-                <span>{p.municipality}</span>
-                <span className="muted">{typeLabel(p)}</span>
-                <span className="muted">{statusLabel(p)}</span>
-                <span className="num muted">{area(p.areaM2)}</span>
-                <span className="num muted">{year(p)}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div key={`${type}-${status}-${view}`} className="swap">
+        {list.length === 0 ? (
+          <div className="empty" style={{ paddingBottom: "20vh" }}>
+            <p className="statement">Tomuto výběru neodpovídá žádný projekt.</p>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => setQuery(new URLSearchParams())}
+            >
+              Zrušit filtry
+            </button>
+          </div>
+        ) : view === "mrizka" ? (
+          <ScatterGrid items={list} />
+        ) : (
+          <ul className="plist">
+            {list.map((p, i) => (
+              <li key={p.slug} style={{ ["--i" as string]: i }}>
+                <Link href={`/projekty/${p.slug}`}>
+                  <span className="name">{p.name}</span>
+                  <span>{p.municipality}</span>
+                  <span className="muted">{typeLabel(p)}</span>
+                  <span className="muted">{statusLabel(p)}</span>
+                  <span className="num muted">{area(p.areaM2)}</span>
+                  <span className="num muted">{year(p)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </>
   );
 }

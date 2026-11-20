@@ -12,6 +12,8 @@ interface Props {
   /** render each pin as a button (used by the no-WebGL fallback) */
   onPinProps?: (slug: string) => Record<string, unknown>;
   pinClassName?: string;
+  /** horizontal nudge per pin (px in the 1000-wide frame) so close pins do not overlap */
+  offsets?: Record<string, number>;
 }
 
 /** Flat map of Czechia: border, regions, rivers, cities and project pins. */
@@ -25,6 +27,7 @@ export function CzMapSvg({
   title = "Mapa České republiky s projekty ateliéru",
   onPinProps,
   pinClassName,
+  offsets = {},
 }: Props) {
   const m = svgMap(width, height, 20);
   return (
@@ -59,21 +62,28 @@ export function CzMapSvg({
         {pins.map((p) => {
           const [x, y] = m.point(p.lng, p.lat);
           const on = highlight === p.slug;
-          const s = on ? 16 : 11;
+          const r = on ? 8.5 : 6;
           const fill = p.status === "realizace" ? "#c8ff2e" : "#ffffff";
-          const stroke =
-            p.status === "soutez" ? "#0a0a0a" : p.status === "vystavba" ? "#8fc400" : "#0a0a0a";
+          const stroke = p.status === "vystavba" ? "#8fc400" : "#0a0a0a";
           return (
             <g key={p.slug} className={pinClassName} {...(onPinProps ? onPinProps(p.slug) : {})}>
-              <line x1={x} y1={y} x2={x} y2={y - 22} stroke="#0a0a0a" strokeWidth={1} />
-              <rect
-                x={x - s / 2}
-                y={y - 22 - s}
-                width={s}
-                height={s}
+              <line
+                x1={x}
+                y1={y}
+                x2={x + (offsets[p.slug] ?? 0)}
+                y2={y - 20}
+                stroke="#0a0a0a"
+                strokeWidth={1}
+              />
+              <circle
+                cx={x + (offsets[p.slug] ?? 0)}
+                cy={y - 20 - r}
+                r={r}
                 fill={fill}
                 stroke={stroke}
+                strokeOpacity={p.status === "soutez" ? 1 : 0.6}
                 strokeWidth={p.status === "vystavba" ? 2.4 : 1}
+                style={{ transition: "r 250ms" }}
               />
               <title>{p.name}</title>
             </g>

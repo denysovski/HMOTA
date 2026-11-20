@@ -7,8 +7,9 @@ The running record of the ProUI workflow for HMOTA. A later session continues fr
 
 - Current stage: first build done (design system, home, 3D hero, 3D map, projects, project pages,
   studio, contact, legal, CI).
-- Waiting for the user: real content (studio name, contact details, projects, photos, team), the
-  English version, and the Copernicus DEM bake for real relief.
+- Content: a complete fictional demo (studio founded 2009 by Jan Husták, team of six shown,
+  16 projects with clients and texts). Every page says in the footer that it is a demo.
+- Still open: the English version and the Copernicus DEM bake for real relief.
 
 ## Intake
 

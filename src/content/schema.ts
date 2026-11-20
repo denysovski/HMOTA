@@ -43,6 +43,8 @@ export const VolumeSchema = z.object({
   h: z.number().positive(),
   y: z.number().default(0),
   glass: z.boolean().default(false),
+  /** optional name shown on the hero model, e.g. "Hlavní hmota · 7 NP" */
+  label: z.string().optional(),
 });
 
 export const ProjectSchema = z

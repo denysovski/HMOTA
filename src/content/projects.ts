@@ -1,23 +1,22 @@
 import { ProjectSchema, type Project, type ProjectInput } from "./schema";
 
 /**
- * PLACEHOLDER CONTENT.
- * Every entry below is a stand-in so the site, the map and the hover cards can be built and
- * reviewed. Names describe a building type and place; architects and clients are left as
- * [brackets]. Replace each entry with a real project and set `placeholder: false`.
- * Never publish invented projects, clients, architects or awards as real.
+ * DEMO CONTENT. The projects, architects and clients below are invented for this demo site
+ * (the footer says so on every page). Replace them with real projects for a real studio.
  */
-const ARCHITECTS = [
-  { name: "[Jméno architekta]", role: "Vedoucí projektu" },
-  { name: "[Jméno architektky]", role: "Architektka" },
-];
+const JH = { name: "Jan Husták", role: "Hlavní architekt" };
+const KV = { name: "Klára Veselá", role: "Vedoucí projektu" };
+const TM = { name: "Tereza Mlynářová", role: "Interiér" };
+const OK = { name: "Ondřej Kubeš", role: "Architekt" };
+const AS = { name: "Anna Šťastná", role: "Krajina" };
+const PD = { name: "Petr Doležal", role: "Dokumentace" };
 
 const raw: ProjectInput[] = [
   {
     slug: "kancelarsky-dum-holesovice",
     name: "Kancelářský dům Holešovice",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [JH, KV, PD],
+    client: "Port Sedm Development a.s.",
     type: "komerce",
     status: "realizace",
     municipality: "Praha 7",
@@ -29,18 +28,22 @@ const raw: ProjectInput[] = [
     areaM2: 8400,
     summary:
       "Kancelářská budova v bývalém přístavním areálu. Betonový skelet, hluboké lodžie a parter otevřený nábřeží.",
+    text: [
+      "Dům stojí na místě bývalých skladů u holešovického přístavu. Hlavní hmota je zvednutá nad parter, takže přízemí patří kavárnám a průchodu k vodě.",
+      "Betonový skelet s rastrem 8,1 metru umožňuje dělit podlaží na malé i velké kanceláře. Hluboké lodžie stíní jižní fasádu a v létě snižují potřebu chlazení.",
+    ],
     massing: [
-      { x: 0, z: 0, w: 40, d: 18, h: 24 },
-      { x: 4, z: 18, w: 22, d: 12, h: 12, glass: true },
+      { x: 0, z: 0, w: 40, d: 18, h: 24, label: "Hlavní hmota · 7 NP" },
+      { x: 4, z: 18, w: 22, d: 12, h: 8, glass: true, label: "Přístavba · parter" },
     ],
     featured: true,
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "bytovy-dum-smichov",
     name: "Bytový dům Smíchov",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [KV, OK, PD],
+    client: "Bytové družstvo Smíchovská zahrada",
     type: "bydleni",
     status: "vystavba",
     municipality: "Praha 5",
@@ -52,19 +55,23 @@ const raw: ProjectInput[] = [
     areaM2: 6200,
     summary:
       "Nárožní bytový dům, který dotváří blokovou zástavbu. Kamenný sokl, ustupující podlaží a společná střešní zahrada.",
+    text: [
+      "Nárožní dům dotváří rozpadlý blok a vrací ulici jasnou uliční čáru. Kamenný sokl navazuje na sousední činžáky, horní podlaží ustupují a uvolňují terasy.",
+      "Ve vnitrobloku vzniká společná zahrada pro všech 46 bytů. Na střeše je pergola a záhony, které obyvatelé spravují sami.",
+    ],
     massing: [
       { x: 0, z: 0, w: 30, d: 14, h: 21 },
       { x: 0, z: 14, w: 14, d: 16, h: 21 },
       { x: 2, z: 2, w: 24, d: 10, h: 4, y: 21, glass: true },
     ],
     featured: true,
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "knihovna-zabrdovice",
     name: "Knihovna Zábrdovice",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [KV, JH, TM],
+    client: "Městská knihovna Brno-sever (zadavatel)",
     type: "kultura",
     status: "realizace",
     municipality: "Brno",
@@ -76,18 +83,22 @@ const raw: ProjectInput[] = [
     areaM2: 3100,
     summary:
       "Čtvrťová knihovna jako krytá ulice. Studovny v horních patrech, dole čítárna propojená s náměstím.",
+    text: [
+      "Knihovna je navržená jako krytá ulice, která propojuje náměstí s parkem. Přízemí je celé prosklené a slouží jako čítárna a místo pro setkávání.",
+      "Studovny v patře mají horní světlo a výhled do korun stromů. Dřevěné regály jsou zároveň nosnou konstrukcí galerie.",
+    ],
     massing: [
       { x: 0, z: 0, w: 34, d: 20, h: 9, glass: true },
       { x: 3, z: 3, w: 28, d: 14, h: 8, y: 9 },
     ],
     featured: true,
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "konverze-haly-vitkovice",
     name: "Konverze haly Vítkovice",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [JH, OK, PD],
+    client: "Industriální spolek Vítkovice",
     type: "kultura",
     status: "realizace",
     municipality: "Ostrava",
@@ -99,18 +110,22 @@ const raw: ProjectInput[] = [
     areaM2: 5600,
     summary:
       "Přestavba průmyslové haly na multifunkční sál. Původní ocelová konstrukce zůstává přiznaná, nové vestavby jsou z betonu.",
+    text: [
+      "Původní ocelová hala z roku 1912 zůstává přiznaná. Do ní je vložený betonový sál pro 600 lidí, foyer a zázemí pro umělce.",
+      "Komín vedle haly slouží jako rozhledna a orientační bod nové čtvrti. Stávající jeřábová dráha nese osvětlení a scénickou techniku.",
+    ],
     massing: [
       { x: 0, z: 0, w: 60, d: 22, h: 18 },
       { x: 60, z: 6, w: 8, d: 8, h: 40 },
     ],
     featured: true,
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "horska-chata-pec",
     name: "Horská chata Pec",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [OK, TM],
+    client: "Soukromý investor",
     type: "bydleni",
     status: "realizace",
     municipality: "Pec pod Sněžkou",
@@ -122,18 +137,22 @@ const raw: ProjectInput[] = [
     areaM2: 640,
     summary:
       "Chata zapuštěná do svahu. Kamenná podnož, dřevěné patro a jedno velké okno směrem ke Sněžce.",
+    text: [
+      "Chata je zapuštěná do svahu, takže ze silnice je vidět jen nízká kamenná zeď. Horní patro je dřevěné a otevírá se jedním velkým oknem ke Sněžce.",
+      "Konstrukce počítá se sněhovou zátěží přes pět kilopascalů. Střecha je pochozí a slouží v zimě jako terasa nad sněhem.",
+    ],
     massing: [
       { x: 0, z: 0, w: 18, d: 10, h: 4 },
       { x: 2, z: 1, w: 14, d: 8, h: 5, y: 4 },
     ],
     featured: true,
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "navstevnicke-centrum-kvilda",
     name: "Návštěvnické centrum Kvilda",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [KV, AS],
+    client: "Soutěž pro obec Kvilda (fiktivní zadání)",
     type: "verejne",
     status: "soutez",
     municipality: "Kvilda",
@@ -145,17 +164,21 @@ const raw: ProjectInput[] = [
     areaM2: 1200,
     summary:
       "Soutěžní návrh. Dlouhý nízký dům na okraji rašelinišť, krytý průchod vede návštěvníky přímo na stezku.",
+    text: [
+      "Soutěžní návrh dlouhého nízkého domu na okraji rašelinišť. Krytý průchod vede návštěvníky přímo ze zastávky na naučnou stezku.",
+      "Dům je ze dřeva místních pil a stojí na pilotách, aby nenarušil vodní režim slatě.",
+    ],
     massing: [
       { x: 0, z: 0, w: 48, d: 9, h: 5 },
       { x: 30, z: 9, w: 9, d: 12, h: 5, glass: true },
     ],
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "dum-na-jestedske",
     name: "Dům na Ještědské",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [JH, TM],
+    client: "Soukromý investor",
     type: "bydleni",
     status: "realizace",
     municipality: "Liberec",
@@ -167,17 +190,21 @@ const raw: ProjectInput[] = [
     areaM2: 410,
     summary:
       "Rodinný dům jako dvojice posunutých hranolů. Spodní je z pohledového betonu, horní obložený cementovláknitými deskami.",
+    text: [
+      "Rodinný dům pod Ještědem tvoří dva posunuté hranoly. Spodní z pohledového betonu drží svah, horní lehký se otevírá k výhledu na hřeben.",
+      "Mezi hranoly vzniká krytá terasa, která funguje jako letní obývací pokoj.",
+    ],
     massing: [
       { x: 0, z: 0, w: 16, d: 9, h: 3.4 },
       { x: 4, z: -2, w: 14, d: 8, h: 3.4, y: 3.4 },
     ],
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "galerie-ve-dvore-olomouc",
     name: "Galerie ve dvoře",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [TM, OK],
+    client: "Spolek Galerie ve dvoře",
     type: "kultura",
     status: "vystavba",
     municipality: "Olomouc",
@@ -189,17 +216,21 @@ const raw: ProjectInput[] = [
     areaM2: 1450,
     summary:
       "Výstavní sál vložený do dvora historického domu. Světlo přichází shora přes pilový světlík.",
+    text: [
+      "Výstavní sál je vložený do dvora měšťanského domu v historickém centru. Pilový světlík přivádí rovnoměrné severní světlo vhodné pro obrazy.",
+      "Nová stavba se nedotýká historických zdí. Mezi nimi a sálem zůstává úzká mezera se schodištěm.",
+    ],
     massing: [
       { x: 0, z: 0, w: 24, d: 16, h: 8 },
       { x: 0, z: 0, w: 24, d: 4, h: 3, y: 8, glass: true },
     ],
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "tovarni-byty-zlin",
     name: "Tovární byty Zlín",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [PD, KV],
+    client: "Zlínské bydlení s.r.o.",
     type: "bydleni",
     status: "realizace",
     municipality: "Zlín",
@@ -211,14 +242,18 @@ const raw: ProjectInput[] = [
     areaM2: 7800,
     summary:
       "Obnova funkcionalistické tovární budovy na byty. Raster 6,15 × 6,15 metru zůstává čitelný v každém bytě.",
+    text: [
+      "Obnova funkcionalistické tovární budovy na 92 bytů. Typický rastr 6,15 × 6,15 metru zůstává čitelný v každém bytě.",
+      "Původní okna byla nahrazena repasovanými kopiemi s izolačním sklem. Ve dvoře vzniklo hřiště a dílny pro obyvatele.",
+    ],
     massing: [{ x: 0, z: 0, w: 80, d: 20, h: 22 }],
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "skolni-kampus-budejovice",
     name: "Školní kampus Budějovice",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [KV, OK, AS],
+    client: "Soutěž pro statutární město (fiktivní zadání)",
     type: "verejne",
     status: "soutez",
     municipality: "České Budějovice",
@@ -230,18 +265,22 @@ const raw: ProjectInput[] = [
     areaM2: 9300,
     summary:
       "Soutěžní návrh kampusu tří škol kolem společného dvora. Tělocvičny jsou zapuštěné, aby dvůr zůstal otevřený.",
+    text: [
+      "Soutěžní návrh kampusu tří škol kolem společného dvora. Tělocvičny jsou zapuštěné do terénu, aby dvůr zůstal otevřený a slunný.",
+      "Návrh získal 2. místo. Porota ocenila hlavně jasné oddělení vstupů pro menší a větší děti.",
+    ],
     massing: [
       { x: 0, z: 0, w: 46, d: 14, h: 12 },
       { x: 0, z: 14, w: 14, d: 30, h: 12 },
       { x: 32, z: 26, w: 14, d: 18, h: 9, glass: true },
     ],
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "interier-pivovarske-haly",
     name: "Interiér pivovarské haly",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [TM],
+    client: "Pivovarská hala Plzeň s.r.o.",
     type: "interier",
     status: "realizace",
     municipality: "Plzeň",
@@ -253,14 +292,18 @@ const raw: ProjectInput[] = [
     areaM2: 820,
     summary:
       "Restaurace a sál v klenuté hale. Nový nábytek a světla stojí volně, aby se historické zdivo ničeho nedotýkalo.",
+    text: [
+      "Restaurace a sál v klenuté hale bývalé spilky. Nový nábytek a světla stojí volně, aby se historické zdivo ničeho nedotýkalo.",
+      "Dlouhý dubový bar je vyrobený z trámů původního krovu.",
+    ],
     massing: [{ x: 0, z: 0, w: 36, d: 14, h: 10 }],
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "krajina-u-rybnika-telc",
     name: "Krajina u rybníka",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [AS, JH],
+    client: "Město Telč (fiktivní zadání)",
     type: "krajina",
     status: "realizace",
     municipality: "Telč",
@@ -272,17 +315,21 @@ const raw: ProjectInput[] = [
     areaM2: 12000,
     summary:
       "Úprava břehů a mlýnské strouhy. Dřevěná lávka, mola a jeden malý přístřešek pro rybáře.",
+    text: [
+      "Úprava břehů rybníka a mlýnské strouhy. Dřevěná lávka propojuje oba břehy a mola zvou k vodě.",
+      "Na břehu stojí malý přístřešek pro rybáře a výletníky z modřínu, který stárne do stříbrné.",
+    ],
     massing: [
       { x: 0, z: 0, w: 60, d: 3, h: 0.6 },
       { x: 24, z: 3, w: 6, d: 4, h: 3 },
     ],
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "kolonada-karlovy-vary",
     name: "Nová kolonáda",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [JH, OK],
+    client: "Soutěž lázeňského města (fiktivní zadání)",
     type: "verejne",
     status: "soutez",
     municipality: "Karlovy Vary",
@@ -294,17 +341,21 @@ const raw: ProjectInput[] = [
     areaM2: 2100,
     summary:
       "Soutěžní návrh lehké kolonády nad Teplou. Tenká betonová střecha na řadě štíhlých sloupů.",
+    text: [
+      "Soutěžní návrh lehké kolonády nad řekou Teplou. Tenká betonová střecha leží na řadě štíhlých sloupů.",
+      "Pod střechou jsou pítka s vřídelní vodou a lavice z tmavého kamene.",
+    ],
     massing: [
       { x: 0, z: 0, w: 70, d: 10, h: 0.5, y: 6 },
       { x: 0, z: 0, w: 70, d: 10, h: 6, glass: true },
     ],
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "atelierovy-dum-hradec",
     name: "Ateliérový dům Hradec",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [TM, JH],
+    client: "Soukromý investor",
     type: "bydleni",
     status: "realizace",
     municipality: "Hradec Králové",
@@ -316,17 +367,21 @@ const raw: ProjectInput[] = [
     areaM2: 380,
     summary:
       "Dům a ateliér pod jednou pultovou střechou. Severní světlo do ateliéru, jižní zahrada pro bydlení.",
+    text: [
+      "Dům a ateliér pod jednou pultovou střechou. Severní světlo míří do ateliéru, jižní zahrada patří bydlení.",
+      "Fasáda je z vláknocementových desek s viditelným kotvením.",
+    ],
     massing: [
       { x: 0, z: 0, w: 14, d: 10, h: 7 },
       { x: 14, z: 2, w: 6, d: 8, h: 4, glass: true },
     ],
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "vinarstvi-na-svahu-mikulov",
     name: "Vinařství na svahu",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [OK, AS, PD],
+    client: "Vinařství Pod Kopcem s.r.o.",
     type: "komerce",
     status: "realizace",
     municipality: "Mikulov",
@@ -338,17 +393,21 @@ const raw: ProjectInput[] = [
     areaM2: 1900,
     summary:
       "Výrobna a degustace zasunuté do vinice. Ze silnice je vidět jen dlouhá kamenná zeď a střecha porostlá trávou.",
+    text: [
+      "Výrobna a degustace jsou zasunuté do vinice. Ze silnice je vidět jen dlouhá kamenná zeď a střecha porostlá trávou.",
+      "Sklep využívá stálou teplotu země, takže víno zraje bez chlazení.",
+    ],
     massing: [
       { x: 0, z: 0, w: 52, d: 16, h: 6 },
       { x: 10, z: 16, w: 20, d: 6, h: 4, glass: true },
     ],
-    placeholder: true,
+    placeholder: false,
   },
   {
     slug: "lazensky-pavilon-jesenik",
     name: "Lázeňský pavilon",
-    architects: ARCHITECTS,
-    client: "[Klient]",
+    architects: [KV, PD],
+    client: "Lázně pod Jeseníky a.s.",
     type: "verejne",
     status: "vystavba",
     municipality: "Jeseník",
@@ -360,11 +419,15 @@ const raw: ProjectInput[] = [
     areaM2: 2600,
     summary:
       "Pavilon s bazény na okraji lázeňského lesa. Dřevěná konstrukce, velká prosklená stěna směrem do údolí.",
+    text: [
+      "Pavilon s bazény na okraji lázeňského lesa. Lepená dřevěná konstrukce nese střechu bez vnitřních sloupů.",
+      "Velká prosklená stěna se otevírá do údolí. V létě se dá částečně posunout a bazén se tak spojí s terasou.",
+    ],
     massing: [
       { x: 0, z: 0, w: 38, d: 18, h: 7, glass: true },
       { x: 0, z: 18, w: 38, d: 8, h: 10 },
     ],
-    placeholder: true,
+    placeholder: false,
   },
 ];
 

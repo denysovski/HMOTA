@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
@@ -14,12 +15,9 @@ import {
 import type { MapSceneHandle } from "./MapScene";
 import { CardBody } from "./CardBody";
 import { CzMapSvg } from "./CzMapSvg";
-import { gsap, prefersReducedMotion } from "@/lib/motion";
+import { area, duration, monthYear, regionLabel } from "@/lib/format";
 
-const MapScene = dynamic(() => import("./MapScene"), {
-  ssr: false,
-  loading: () => null,
-});
+const MapScene = dynamic(() => import("./MapScene"), { ssr: false, loading: () => null });
 
 let webgl: boolean | undefined;
 function hasWebGL() {
@@ -35,6 +33,13 @@ function hasWebGL() {
 }
 const noopSubscribe = () => () => {};
 
+function subscribeNarrow(cb: () => void) {
+  const mq = window.matchMedia("(max-width: 767px)");
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+const isNarrow = () => window.matchMedia("(max-width: 767px)").matches;
+
 export function MapExplorer({ projects }: { projects: Project[] }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -43,18 +48,16 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
   const status = params.get("stav") as ProjectStatus | null;
 
   const gl = useSyncExternalStore(noopSubscribe, hasWebGL, () => null);
+  const narrow = useSyncExternalStore(subscribeNarrow, isNarrow, () => false);
+  const [ready, setReady] = useState(false);
   const [hovered, setHoveredState] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(params.get("projekt"));
   const [cardSlug, setCardSlug] = useState<string | null>(params.get("projekt"));
+  const [expanded, setExpanded] = useState<string | null>(null);
   const scene = useRef<MapSceneHandle>(null);
+  const pos = useRef<HTMLDivElement>(null);
   const card = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
-  const shown = useRef(false);
-
-  const setHovered = useCallback((slug: string | null) => {
-    setHoveredState(slug);
-    if (slug) setCardSlug(slug);
-  }, []);
 
   const visible = useMemo(
     () =>
@@ -73,40 +76,26 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
     router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
   };
 
-  const focus = hovered ?? selected;
+  const setHovered = useCallback((slug: string | null) => {
+    setHoveredState(slug);
+    if (slug) setCardSlug(slug);
+  }, []);
 
-  // card content follows the focused pin; keep the last one during the exit animation
+  // on touch screens a hover never happens: the card opens on tap (select) only
+  const focus = narrow ? selected : (hovered ?? selected);
+  const focusRef = useRef<string | null>(null);
   useEffect(() => {
+    focusRef.current = focus;
     const el = card.current;
-    if (focus) {
-      if (el && !shown.current) {
-        shown.current = true;
-        gsap.fromTo(
-          el,
-          { autoAlpha: 0, scale: 0.95 },
-          {
-            autoAlpha: 1,
-            scale: 1,
-            duration: prefersReducedMotion() ? 0 : 0.18,
-            ease: "power2.out",
-          },
-        );
-      }
-    } else if (el && shown.current) {
-      shown.current = false;
-      gsap.to(el, {
-        autoAlpha: 0,
-        scale: 0.95,
-        duration: prefersReducedMotion() ? 0 : 0.14,
-        ease: "power2.in",
-        onComplete: () => setCardSlug(null),
-      });
-    }
-  }, [focus]);
+    if (!el) return;
+    if (!focus) el.dataset.show = "false";
+    else if (selected) el.dataset.show = "true"; // docked card or bottom sheet: no anchor needed
+    // a floating card is shown by onAnchor once it has been positioned next to its pin
+  }, [focus, selected]);
 
   const select = useCallback(
     (slug: string) => {
-      if (selected === slug) {
+      if (selected === slug && !narrow) {
         router.push(`/projekty/${slug}`);
         return;
       }
@@ -114,14 +103,14 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
       setCardSlug(slug);
       scene.current?.flyTo(slug);
     },
-    [selected, router],
+    [selected, router, narrow],
   );
 
-  const close = () => {
+  const close = useCallback(() => {
     setSelected(null);
-    setHovered(null);
+    setHoveredState(null);
     scene.current?.reset();
-  };
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -129,26 +118,40 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  });
+  }, [close]);
 
-  // position the hover card next to the pin, inside the stage
+  // place the floating card next to its pin, inside the stage; called every frame by the scene
   const onAnchor = useCallback(
     (x: number, y: number, ok: boolean) => {
+      const p = pos.current;
       const el = card.current;
       const st = stage.current;
-      if (!el || !st || selected) return; // a selected card is docked
-      if (!ok) return;
+      if (!p || !el || !st || selected || narrow || !focusRef.current) return;
+      if (!ok) {
+        el.dataset.show = "false";
+        return;
+      }
       const w = el.offsetWidth;
       const h = el.offsetHeight;
       const W = st.clientWidth;
       const H = st.clientHeight;
       let left = x + 22;
       let top = y - h - 16;
-      if (left + w > W - 12) left = x - w - 22;
-      if (top < 70) top = Math.min(H - h - 12, y + 24);
-      el.style.transform = `translate3d(${Math.round(left)}px, ${Math.round(top)}px, 0)`;
+      let ox = "0%";
+      let oy = "100%";
+      if (left + w > W - 12) {
+        left = x - w - 22;
+        ox = "100%";
+      }
+      if (top < 84) {
+        top = Math.min(H - h - 12, y + 24);
+        oy = "0%";
+      }
+      p.style.transform = `translate3d(${Math.round(left)}px, ${Math.round(top)}px, 0)`;
+      el.style.transformOrigin = `${ox} ${oy}`;
+      el.dataset.show = "true";
     },
-    [selected],
+    [selected, narrow],
   );
 
   const current = projects.find((p) => p.slug === (focus ?? cardSlug));
@@ -157,9 +160,27 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
     items: projects.filter((p) => p.region === r),
   })).filter((g) => g.items.length);
 
+  const onItem = (slug: string) => {
+    if (narrow) {
+      // phones: unfold the row in the list (tap again to fold it) and fly the map to the site
+      setExpanded((e) => (e === slug ? null : slug));
+      scene.current?.flyTo(slug);
+      return;
+    }
+    select(slug);
+  };
+
+  const showLoader = gl !== false && !ready;
+
   return (
     <div className="map-page">
       <div className="map-stage" ref={stage} data-lenis-prevent>
+        <div className="map-loader" data-done={!showLoader} aria-hidden={!showLoader}>
+          <div className="map-loader-inner">
+            <span className="map-loader-bar" />
+            <p className="label">Stavíme model republiky…</p>
+          </div>
+        </div>
         <div className="map-hud">
           <h1>
             Kde
@@ -212,17 +233,11 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
             <CzMapSvg
               pins={projects.filter((p) => visible.has(p.slug))}
               highlight={focus ?? undefined}
-              pinClassName="svg-pin"
               onPinProps={(slug) => ({
                 tabIndex: 0,
                 role: "button",
                 "aria-label": projects.find((p) => p.slug === slug)?.name,
-                onMouseEnter: () => setHovered(slug),
-                onMouseLeave: () => setHovered(null),
-                onClick: () => {
-                  setSelected(slug);
-                  setCardSlug(slug);
-                },
+                onClick: () => select(slug),
               })}
             />
           </div>
@@ -232,14 +247,15 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
             ref={scene}
             projects={projects}
             visible={visible}
-            hovered={hovered}
+            hovered={narrow ? null : hovered}
             selected={selected}
-            onHover={setHovered}
+            onHover={narrow ? () => {} : setHovered}
             onSelect={select}
             onAnchor={onAnchor}
             onReady={() => {
+              setReady(true);
               const initial = params.get("projekt");
-              if (initial) setTimeout(() => scene.current?.flyTo(initial), 1500);
+              if (initial) setTimeout(() => scene.current?.flyTo(initial), 1200);
             }}
           />
         )}
@@ -271,17 +287,19 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
         )}
 
         <div className="sheet-backdrop" data-open={selected ? "true" : "false"} onClick={close} />
-        <div
-          ref={card}
-          className="map-card"
-          data-docked={selected ? "true" : "false"}
-          style={{ visibility: "hidden", opacity: 0 }}
-          onMouseEnter={() => focus && setHovered(focus)}
-          onMouseLeave={() => setHovered(null)}
-          role={selected ? "dialog" : undefined}
-          aria-label={current?.name}
-        >
-          {current && <CardBody p={current} onClose={selected ? close : undefined} />}
+        <div ref={pos} className="map-card-pos" data-docked={selected ? "true" : "false"}>
+          <div
+            ref={card}
+            className="map-card"
+            data-show="false"
+            onMouseEnter={() => !narrow && focusRef.current && setHovered(focusRef.current)}
+            onMouseLeave={() => !narrow && setHovered(null)}
+            role={selected ? "dialog" : undefined}
+            aria-label={current?.name}
+          >
+            {narrow && <span className="sheet-grip" aria-hidden="true" />}
+            {current && <CardBody p={current} onClose={selected ? close : undefined} />}
+          </div>
         </div>
       </div>
 
@@ -292,33 +310,54 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
         </p>
         {byRegion.map((g) => (
           <section key={g.region}>
-            <h2 className="label">
-              {g.region === "Praha"
-                ? "Praha"
-                : g.region === "Vysočina"
-                  ? "Vysočina"
-                  : `${g.region} kraj`}
-            </h2>
+            <h2 className="label">{regionLabel(g.region)}</h2>
             <ul>
-              {g.items.map((p) => (
-                <li key={p.slug}>
-                  <button
-                    type="button"
-                    className="item"
-                    data-active={focus === p.slug}
-                    data-dim={!visible.has(p.slug)}
-                    disabled={!visible.has(p.slug)}
-                    onMouseEnter={() => setHovered(p.slug)}
-                    onMouseLeave={() => setHovered(null)}
-                    onFocus={() => setHovered(p.slug)}
-                    onBlur={() => setHovered(null)}
-                    onClick={() => select(p.slug)}
-                  >
-                    <span>{p.name}</span>
-                    <span className="label">{p.municipality}</span>
-                  </button>
-                </li>
-              ))}
+              {g.items.map((p) => {
+                const open = narrow && expanded === p.slug;
+                return (
+                  <li key={p.slug} className="side-item" data-open={open}>
+                    <button
+                      type="button"
+                      className="item"
+                      data-active={focus === p.slug || open}
+                      data-dim={!visible.has(p.slug)}
+                      disabled={!visible.has(p.slug)}
+                      aria-expanded={narrow ? open : undefined}
+                      onMouseEnter={() => !narrow && setHovered(p.slug)}
+                      onMouseLeave={() => !narrow && setHovered(null)}
+                      onFocus={() => !narrow && setHovered(p.slug)}
+                      onBlur={() => !narrow && setHovered(null)}
+                      onClick={() => onItem(p.slug)}
+                    >
+                      <span>{p.name}</span>
+                      <span className="label">{p.municipality}</span>
+                      <span className="item-chevron" aria-hidden="true" />
+                    </button>
+                    <div className="side-detail" aria-hidden={!open}>
+                      <div>
+                        <dl>
+                          <dt>Investor</dt>
+                          <dd>{p.client}</dd>
+                          <dt>Navrhli</dt>
+                          <dd>{p.architects.map((a) => a.name).join(", ")}</dd>
+                          <dt>Zakázka</dt>
+                          <dd className="num">
+                            {monthYear(p.commissioned)} –{" "}
+                            {p.completed ? monthYear(p.completed) : "dosud"}
+                          </dd>
+                          <dt>Doba</dt>
+                          <dd className="num">{duration(p)}</dd>
+                          <dt>Plocha</dt>
+                          <dd className="num">{area(p.areaM2)}</dd>
+                        </dl>
+                        <Link href={`/projekty/${p.slug}`} className="u" tabIndex={open ? 0 : -1}>
+                          Detail projektu <span className="arrow">→</span>
+                        </Link>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         ))}

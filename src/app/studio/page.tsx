@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
-import { site } from "@/lib/site";
+import { Avatar } from "@/components/Avatar";
+import { site, team } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Studio",
@@ -53,13 +54,30 @@ export default function StudioPage() {
           </tbody>
         </table>
       </section>
-      <section className="section-tight">
-        <p className="label">Lidé</p>
-        <p className="statement" style={{ marginTop: 14, maxWidth: "24ch" }}>
-          [Tým: jména, role a portréty doplní ateliér.]
-        </p>
-        <p className="small muted" style={{ marginTop: 24 }}>
-          Hledáme kolegy?{" "}
+      <section className="section-tight" aria-labelledby="lide">
+        <div className="team-head">
+          <h2 className="h2" id="lide">
+            Lidé
+          </h2>
+          <p className="small muted">
+            Ve studiu nás je {site.people}. Tady je šest z nás, kteří vedou projekty od první skici
+            po kolaudaci.
+          </p>
+        </div>
+        <ul className="team">
+          {team.map((p) => (
+            <li key={p.name} className="person">
+              <Avatar kind={p.avatar} title={`Ilustrace: ${p.name}`} />
+              <p className="person-name">{p.name}</p>
+              <p className="label">
+                {p.role} · v ateliéru od {p.since}
+              </p>
+              <p className="small muted person-bio">{p.bio}</p>
+            </li>
+          ))}
+        </ul>
+        <p className="small muted" style={{ marginTop: 40 }}>
+          Hledáme architekta nebo architektku do týmu soutěží.{" "}
           <Link href="/kontakt" className="u">
             Napište nám
           </Link>

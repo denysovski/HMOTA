@@ -4,7 +4,6 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { site } from "@/lib/site";
-import { hasPlaceholders } from "@/content/projects";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -50,9 +49,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <main id="obsah">{children}</main>
         <Footer />
-        {hasPlaceholders && (
-          <p className="placeholder-flag">Ukázková data · nahradit před spuštěním</p>
-        )}
       </body>
     </html>
   );

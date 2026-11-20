@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FocusEvent, type FormEvent } from "react";
+import { Select } from "./Select";
 import { site } from "@/lib/site";
 
 type Status = "idle" | "sending" | "sent" | "error";
@@ -15,16 +16,38 @@ const TYPES = [
   "Jiné",
 ];
 const BUDGETS = [
-  "do 10 mil. Kč",
+  "Do 10 mil. Kč",
   "10–30 mil. Kč",
   "30–100 mil. Kč",
-  "nad 100 mil. Kč",
-  "zatím nevím",
+  "Nad 100 mil. Kč",
+  "Zatím nevím",
 ];
 
 export function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const formRef = useRef<HTMLFormElement>(null);
+  const [bar, setBar] = useState<{ x: number; y: number; w: number; on: boolean }>({
+    x: 0,
+    y: 0,
+    w: 0,
+    on: false,
+  });
+
+  // a lime rule slides to the field that has focus
+  const onFocusIn = (e: FocusEvent<HTMLFormElement>) => {
+    const field = (e.target as HTMLElement).closest(".field");
+    const form = formRef.current;
+    if (!field || !form) return;
+    const control = field.querySelector("input:not([type=hidden]), textarea, .select-button");
+    if (!control) return;
+    const f = form.getBoundingClientRect();
+    const r = control.getBoundingClientRect();
+    setBar({ x: r.left - f.left, y: r.bottom - f.top - 2, w: r.width, on: true });
+  };
+  const onFocusOut = (e: FocusEvent<HTMLFormElement>) => {
+    if (!formRef.current?.contains(e.relatedTarget as Node)) setBar((b) => ({ ...b, on: false }));
+  };
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -90,7 +113,24 @@ export function ContactForm() {
   });
 
   return (
-    <form className="form" onSubmit={submit} noValidate id="poptavka">
+    <form
+      ref={formRef}
+      className="form"
+      onSubmit={submit}
+      noValidate
+      id="poptavka"
+      onFocus={onFocusIn}
+      onBlur={onFocusOut}
+    >
+      <span
+        className="focus-bar"
+        aria-hidden="true"
+        style={{
+          transform: `translate3d(${bar.x}px, ${bar.y}px, 0)`,
+          width: bar.w,
+          opacity: bar.on ? 1 : 0,
+        }}
+      />
       <div className="grid" style={{ rowGap: 22 }}>
         <div className="span-wide">
           {field(
@@ -117,36 +157,28 @@ export function ContactForm() {
           {field(
             "type",
             "Typ projektu",
-            <select id="type" name="type" defaultValue={TYPES[0]}>
-              {TYPES.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>,
+            <Select id="type" name="type" options={TYPES} defaultValue={TYPES[0]!} />,
           )}
         </div>
         <div className="span-wide">
           {field(
             "location",
             "Místo stavby",
-            <input id="location" name="location" placeholder="obec nebo katastr" />,
+            <input id="location" name="location" placeholder="Obec nebo katastr" />,
           )}
         </div>
         <div className="span-half">
           {field(
             "budget",
             "Rozpočet stavby",
-            <select id="budget" name="budget" defaultValue={BUDGETS[4]}>
-              {BUDGETS.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>,
+            <Select id="budget" name="budget" options={BUDGETS} defaultValue={BUDGETS[4]!} />,
           )}
         </div>
         <div className="span-half">
           {field(
             "timeline",
             "Kdy chcete začít",
-            <input id="timeline" name="timeline" placeholder="např. jaro 2027" />,
+            <input id="timeline" name="timeline" placeholder="Např. jaro 2027" />,
           )}
         </div>
         <div style={{ gridColumn: "1 / -1" }}>

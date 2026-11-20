@@ -17,7 +17,7 @@ export function Footer() {
                 </li>
               ))}
               <li>
-                <Link className="u" href="/kontakt#poptavka">
+                <Link className="u" href="/kontakt">
                   Začít projekt
                 </Link>
               </li>
@@ -31,11 +31,7 @@ export function Footer() {
                   {site.email}
                 </a>
               </li>
-              <li>
-                <a className="u" href={`tel:${site.phone.replace(/\s/g, "")}`}>
-                  {site.phone}
-                </a>
-              </li>
+              <li className="num">{site.phone}</li>
               {site.social.map((s) => (
                 <li key={s.label}>
                   <a className="u" href={s.href} rel="noopener noreferrer" target="_blank">
@@ -69,9 +65,13 @@ export function Footer() {
         <p className="footer-word" aria-hidden="true">
           {site.name}
         </p>
+        <p className="footer-demo">
+          <span className="footer-demo-dot" aria-hidden="true" />
+          {site.demoNote}
+        </p>
         <div className="footer-legal label">
           <span>
-            © {new Date().getFullYear()} {site.name} · IČO {site.ico}
+            © {new Date().getFullYear()} {site.legalName} · IČO {site.ico}
           </span>
           <span>
             <Link className="u" href="/ochrana-soukromi">

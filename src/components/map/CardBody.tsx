@@ -45,11 +45,6 @@ export function CardBody({ p, onClose }: { p: Project; onClose?: () => void }) {
             </button>
           )}
         </div>
-        {p.placeholder && (
-          <p className="label" style={{ marginTop: 10 }}>
-            Ukázková data, nahradit skutečným projektem.
-          </p>
-        )}
       </div>
     </>
   );

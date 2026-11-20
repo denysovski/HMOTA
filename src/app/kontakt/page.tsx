@@ -27,9 +27,7 @@ export default function ContactPage() {
           </p>
           <p className="label">Telefon</p>
           <p style={{ marginBottom: 18 }}>
-            <a className="u" href={`tel:${site.phone.replace(/\s/g, "")}`}>
-              {site.phone}
-            </a>
+            <span className="num">{site.phone}</span>
           </p>
           <p className="label">Ateliér</p>
           <address style={{ fontStyle: "normal", marginBottom: 18 }}>

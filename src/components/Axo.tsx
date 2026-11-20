@@ -19,6 +19,10 @@ export interface AxoProps {
   className?: string;
   /** draw the site plan outline in lime under the building */
   plan?: boolean;
+  /** callouts: a leader line from the top of a volume to a label (HTML, so it stays readable) */
+  notes?: { vol: number; text: string; dx?: number; dy?: number }[];
+  /** a short line under the drawing that says what it shows */
+  caption?: string;
 }
 
 /** Axonometric hairline drawing of a project's massing. Pure SVG, server-rendered. */
@@ -30,6 +34,8 @@ export function Axo({
   title,
   className,
   plan = true,
+  notes,
+  caption,
 }: AxoProps) {
   // centre the massing on the origin
   const minX = Math.min(...massing.map((v) => v.x));
@@ -39,7 +45,7 @@ export function Axo({
   const cx = (minX + maxX) / 2;
   const cz = (minZ + maxZ) / 2;
   const vols = massing
-    .map((v) => ({ ...v, x: v.x - cx, z: v.z - cz }))
+    .map((v, i) => ({ ...v, i, x: v.x - cx, z: v.z - cz }))
     .sort((a, b) => a.x + a.w + a.z + a.d + a.y - (b.x + b.w + b.z + b.d + b.y));
 
   // site: a plot around the footprint
@@ -79,9 +85,22 @@ export function Axo({
   }
 
   const clay = variant === "clay";
+
+  // callouts: anchor on the top of the volume, label offset outwards (viewBox units)
+  const callouts = (notes ?? []).flatMap((n) => {
+    const v = vols.find((q) => q.i === n.vol);
+    if (!v) return [];
+    const a = iso(v.x + v.w * 0.5, v.y + v.h, v.z + v.d * 0.5);
+    const l: P = [a[0] + (n.dx ?? 0.18) * vw, a[1] + (n.dy ?? -0.16) * vh];
+    return [{ a, l, text: n.text, right: (n.dx ?? 0.18) >= 0 }];
+  });
+  const pct = (p: P) => ({
+    left: `${((p[0] - x0) / vw) * 100}%`,
+    top: `${((p[1] - y0) / vh) * 100}%`,
+  });
   const shadowDx = 0.35;
 
-  return (
+  const svg = (
     <svg
       viewBox={`${x0.toFixed(2)} ${y0.toFixed(2)} ${vw.toFixed(2)} ${vh.toFixed(2)}`}
       className={className}
@@ -213,6 +232,45 @@ export function Axo({
           );
         })}
       </g>
+      {callouts.length > 0 && (
+        <g stroke="#0a0a0a" strokeWidth={1} fill="none">
+          {callouts.map((c, i) => (
+            <g key={i}>
+              <circle
+                cx={c.a[0]}
+                cy={c.a[1]}
+                r={vw * 0.0035}
+                fill="#c8ff2e"
+                vectorEffect="non-scaling-stroke"
+              />
+              <polyline
+                points={pts([c.a, [c.a[0], c.l[1]], c.l])}
+                strokeOpacity={0.55}
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
+          ))}
+        </g>
+      )}
     </svg>
+  );
+  if (!callouts.length && !caption) return svg;
+  return (
+    <figure className="axo-figure">
+      <div className="axo-wrap">
+        {svg}
+        {callouts.map((c, i) => (
+          <span
+            key={i}
+            className="axo-note"
+            data-side={c.right ? "right" : "left"}
+            style={pct(c.l)}
+          >
+            {c.text}
+          </span>
+        ))}
+      </div>
+      {caption && <figcaption className="axo-caption">{caption}</figcaption>}
+    </figure>
   );
 }

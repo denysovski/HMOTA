@@ -262,12 +262,24 @@ function Pin({
       }),
     };
   }, [p.status]);
-  const headGeo = useMemo(() => new THREE.BoxGeometry(HEAD, HEAD, HEAD), []);
+  const headGeo = useMemo(() => new THREE.SphereGeometry(HEAD * 0.62, 24, 16), []);
   const stemGeo = useMemo(
     () => new THREE.BoxGeometry(0.018, PIN_H, 0.018).translate(0, PIN_H / 2, 0),
     [],
   );
-  const headEdges = useMemo(() => new THREE.EdgesGeometry(headGeo), [headGeo]);
+  // a thin ring around the sphere reads as the outline (status colour)
+  const headEdges = useMemo(() => {
+    const pts: number[] = [];
+    const r = HEAD * 0.63;
+    for (let i = 0; i < 48; i++) {
+      const a = (i / 48) * Math.PI * 2;
+      const b2 = ((i + 1) / 48) * Math.PI * 2;
+      pts.push(Math.cos(a) * r, 0, Math.sin(a) * r, Math.cos(b2) * r, 0, Math.sin(b2) * r);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    return g;
+  }, []);
 
   useFrame((_, dt) => {
     const s = state.current.get(p.slug);
@@ -354,16 +366,17 @@ interface SceneProps {
 }
 
 const Inner = forwardRef<MapSceneHandle, SceneProps & { reduced: boolean }>(function Inner(
-  { projects, visible, hovered, selected, onHover, onSelect, onAnchor, reduced },
+  { projects, visible, hovered, selected, onHover, onSelect, onAnchor, onReady, reduced },
   ref,
 ) {
   const { camera, size, invalidate } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
-  const intro = useRef(reduced ? 10 : 0);
+  const intro = useRef(reduced ? 10 : -0.35);
   const rise = useRef(reduced ? 1 : 0);
   const heads = useRef(new Map<string, THREE.Object3D>());
   const state = useRef(new Map<string, PinState>());
   const v = useMemo(() => new THREE.Vector3(), []);
+  const frames = useRef(0);
 
   // derived pin state for the frame loop
   useEffect(() => {
@@ -381,21 +394,32 @@ const Inner = forwardRef<MapSceneHandle, SceneProps & { reduced: boolean }>(func
 
   // portrait stages need the camera further back so the whole country fits
   const aspect = size.width / Math.max(1, size.height);
-  const fit = aspect >= 1.15 ? 1 : Math.min(2, 1.15 / aspect);
-  const homePos = useMemo(
-    () => HOME.target.clone().add(HOME.pos.clone().sub(HOME.target).multiplyScalar(fit)),
-    [fit],
+  const narrow = size.width < 768;
+  const fit = (aspect >= 1.15 ? 1 : Math.min(2.3, 1.15 / aspect)) * (narrow ? 1.8 : 1);
+  const homeTarget = useMemo(
+    () => (narrow ? new THREE.Vector3(1.2, -0.4, -1.2) : HOME.target.clone()),
+    [narrow],
   );
+  const homePos = useMemo(() => {
+    const offset = HOME.pos.clone().sub(HOME.target).multiplyScalar(fit);
+    return homeTarget.clone().add(offset);
+  }, [fit, homeTarget]);
 
   useEffect(() => {
     camera.position.copy(homePos);
-    camera.lookAt(HOME.target);
-  }, [camera, homePos]);
+    camera.lookAt(homeTarget);
+    controls.current?.target.copy(homeTarget);
+    controls.current?.update();
+  }, [camera, homePos, homeTarget]);
 
   useFrame((_, dt) => {
+    frames.current++;
+    if (frames.current === 3) onReady?.(); // terrain, textures and shaders are on screen
+    if (frames.current < 3) return;
     if (intro.current < 10) {
+      // start the terrain rise just as the loading overlay fades
       intro.current += dt;
-      const t = Math.min(1, intro.current / 0.9);
+      const t = Math.min(1, Math.max(0, intro.current) / 0.9);
       rise.current = 1 - Math.pow(2, -10 * t);
       if (t >= 1) rise.current = 1;
     }
@@ -450,7 +474,7 @@ const Inner = forwardRef<MapSceneHandle, SceneProps & { reduced: boolean }>(func
       fly(pos, target);
     },
     reset() {
-      fly(homePos.clone(), HOME.target.clone(), 1.0);
+      fly(homePos.clone(), homeTarget.clone(), 1.0);
     },
     zoom(dir) {
       const c = controls.current;
@@ -541,7 +565,6 @@ const MapScene = forwardRef<MapSceneHandle, SceneProps>(function MapScene(props,
         scene.background = new THREE.Color("#f1f1ee");
         scene.fog = new THREE.Fog("#f1f1ee", 30, 60);
         gl.toneMapping = THREE.NeutralToneMapping;
-        props.onReady?.();
       }}
       onPointerMissed={() => props.onHover(null)}
       aria-hidden="true"

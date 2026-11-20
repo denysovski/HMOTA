@@ -68,7 +68,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
           <Axo massing={p.massing} aspect={16 / 8} pad={0.3} title={`Axonometrie: ${p.name}`} />
         </div>
         <p className="label" style={{ marginTop: 10 }}>
-          Axonometrie hmoty. {p.placeholder ? "Fotografie budou doplněny." : ""}
+          Axonometrie hmoty, měřítko orientační.
         </p>
       </div>
       <section className="wrap section-tight">
@@ -123,10 +123,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
           <div className="detail-text">
             <Reveal className="statement">{p.summary}</Reveal>
             <div style={{ marginTop: 40 }}>
-              {(p.text.length
-                ? p.text
-                : ["[Text o projektu: zadání, místo, koncept, materiál a detail. 300–600 slov.]"]
-              ).map((t) => (
+              {p.text.map((t) => (
                 <p key={t} className="serif-text">
                   {t}
                 </p>

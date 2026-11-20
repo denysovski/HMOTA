@@ -41,6 +41,7 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
   const [active, setActive] = useState(true);
   const [stage, setStage] = useState(0);
   const [hour, setHour] = useState(7);
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
     // load the 3D only after first paint, when idle, if WebGL exists and motion is welcome
@@ -76,6 +77,8 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
         scrub: true,
         onUpdate: (self) => {
           progress.current = self.progress;
+          const st = self.progress > 0.025;
+          setStarted((prev) => (prev === st ? prev : st));
           let s = 0;
           STAGES.forEach((stg, i) => {
             if (self.progress >= stg.at) s = i;
@@ -87,6 +90,24 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
     },
     { scope: root },
   );
+
+  const current = enabled ? stage : STAGES.length - 1;
+  const stagesRef = useRef<HTMLOListElement>(null);
+  const [dot, setDot] = useState<{ x: number; ready: boolean }>({ x: 0, ready: false });
+  useEffect(() => {
+    // slide the lime dot under the active stage name
+    const ol = stagesRef.current;
+    const li = ol?.children[current] as HTMLElement | undefined;
+    if (!ol || !li) return;
+    const place = () => setDot({ x: li.offsetLeft - 13, ready: true });
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [current]);
+  const dotStyle = {
+    transform: `translate3d(${dot.x}px, -50%, 0)`,
+    opacity: dot.ready ? 1 : 0,
+  };
 
   const hh = Math.floor(hour);
   const mm = Math.round((hour - hh) * 60);
@@ -106,23 +127,28 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
             onTime={setHour}
           />
         )}
+        <div className="hero-hint" data-hide={started} aria-hidden={started}>
+          <p className="statement">Jeden dům od půdorysu po světlo.</p>
+          <p className="label" style={{ marginTop: 8 }}>
+            Sjeďte dolů a sledujte, jak vzniká
+          </p>
+        </div>
         <h1 className="hero-title">{title}</h1>
         <div className="hero-caption" aria-live="off">
-          <p className="label">
-            {projectName}
-            {stage === STAGES.length - 1 && (
-              <span className="hero-sun">
-                {" "}
-                · {String(hh).padStart(2, "0")}:{String(mm).padStart(2, "0")}
-              </span>
-            )}
+          <p className="hero-time label" data-show={enabled && stage === STAGES.length - 1}>
+            <span className="hero-sun">
+              {String(hh).padStart(2, "0")}:{String(mm).padStart(2, "0")}
+            </span>{" "}
+            · slunce nad Holešovicemi
           </p>
-          <ol className="hero-stages" aria-label="Fáze modelu">
+          <p className="label hero-project">{projectName}</p>
+          <ol className="hero-stages" aria-label="Fáze modelu" ref={stagesRef}>
             {STAGES.map((s, i) => (
-              <li key={s.label} data-active={enabled ? i === stage : i === STAGES.length - 1}>
+              <li key={s.label} data-active={current === i}>
                 {s.label}
               </li>
             ))}
+            <span className="hero-dot" aria-hidden="true" style={dotStyle} />
           </ol>
         </div>
       </div>

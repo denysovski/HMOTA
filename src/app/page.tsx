@@ -8,13 +8,7 @@ import { InkZone } from "@/components/InkZone";
 import { RadialLines } from "@/components/RadialLines";
 import { Magnetic } from "@/components/Magnetic";
 import { featured, projects } from "@/content/projects";
-import { disciplines, site } from "@/lib/site";
-
-const recognition = [
-  { title: "[Název ocenění]", detail: "[kategorie, projekt]", year: "[rok]" },
-  { title: "[Název publikace]", detail: "[číslo, článek]", year: "[rok]" },
-  { title: "[Soutěž]", detail: "[umístění, projekt]", year: "[rok]" },
-];
+import { disciplines, recognition, site } from "@/lib/site";
 
 export default function Home() {
   const hero = featured[0] ?? projects[0]!;
@@ -106,6 +100,11 @@ export default function Home() {
               aspect={21 / 9}
               pad={0.3}
               plan={false}
+              notes={[
+                { vol: 0, text: "Čítárna v parteru · prosklená, 9 m", dx: -0.2, dy: 0.18 },
+                { vol: 1, text: "Studovny · horní světlo, 8 m", dx: 0.2, dy: -0.14 },
+              ]}
+              caption="Skica z první fáze, Knihovna Zábrdovice. Prověřujeme, jak se dvě hmoty skládají na sebe, kudy se vchází a kam dopadá světlo."
             />
           </div>
           <Reveal className="statement process-text">
@@ -118,7 +117,18 @@ export default function Home() {
             přidáváme materiál a detail.
           </p>
           <div className="process-drawing">
-            <Axo massing={projects[1]!.massing} variant="line" aspect={21 / 9} pad={0.3} />
+            <Axo
+              massing={projects[1]!.massing}
+              variant="line"
+              aspect={21 / 9}
+              pad={0.3}
+              notes={[
+                { vol: 0, text: "Nárožní hmota · 6 NP, 21 m", dx: -0.22, dy: -0.12 },
+                { vol: 1, text: "Křídlo do ulice · 46 bytů", dx: -0.24, dy: 0.16 },
+                { vol: 2, text: "Ustupující podlaží · terasy", dx: 0.2, dy: -0.12 },
+              ]}
+              caption="Bytový dům Smíchov ve fázi pro stavební povolení. Hmota se ustálila, řešíme konstrukční raster 6 m, výšku podlaží 3,4 m a napojení na sousední domy. Limetkové linky jsou hranice pozemku."
+            />
           </div>
           <Reveal className="statement process-text">
             Přesnost v provedení. Dispozice, konstrukce a fasáda dostávají řád, výkresy připravené
@@ -181,8 +191,8 @@ export default function Home() {
               <span className="label">krajů</span>
             </div>
             <div>
-              <strong className="num">[–]</strong>
-              <span className="label">lidí v ateliéru (doplnit)</span>
+              <strong className="num">{site.people}</strong>
+              <span className="label">lidí v ateliéru</span>
             </div>
           </div>
         </section>
