@@ -9,6 +9,34 @@ import { lockScroll } from "@/lib/scroll";
 export function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [dark, setDark] = useState(false);
+
+  // the header reads its colour from what is under it: dark over ink sections, light elsewhere
+  useEffect(() => {
+    let raf = 0;
+    const check = () => {
+      raf = 0;
+      const y = 32;
+      const over = Array.from(document.querySelectorAll<HTMLElement>(".ink")).some((el) => {
+        const r = el.getBoundingClientRect();
+        return r.top <= y && r.bottom >= y;
+      });
+      setDark(over);
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(check);
+    };
+    check();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    const t = window.setTimeout(check, 400); // after a page transition settles
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      window.clearTimeout(t);
+      cancelAnimationFrame(raf);
+    };
+  }, [pathname]);
   const isCurrent = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   useEffect(() => {
@@ -30,7 +58,7 @@ export function Header() {
 
   return (
     <>
-      <header className="site-header">
+      <header className="site-header" data-theme={dark || open ? "dark" : "light"}>
         <Link href="/" className="wordmark">
           {site.wordmark.map((w) => (
             <span key={w}>{w}</span>

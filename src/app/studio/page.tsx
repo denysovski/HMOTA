@@ -10,6 +10,21 @@ export const metadata: Metadata = {
   alternates: { canonical: "/studio" },
 };
 
+/** scattered placement, like the project grid: column start / span and a top offset */
+const SLOTS = [
+  { col: "1 / span 3", mt: "0vw" },
+  { col: "8 / span 3", mt: "9vw" },
+  { col: "4 / span 3", mt: "-4vw" },
+  { col: "10 / span 3", mt: "6vw" },
+  { col: "2 / span 3", mt: "-2vw" },
+  { col: "8 / span 3", mt: "11vw" },
+];
+
+const slot = (i: number) => {
+  const s = SLOTS[i % SLOTS.length] ?? SLOTS[0];
+  return { gridColumn: s?.col, marginTop: s?.mt };
+};
+
 const approach = [
   ["Místo", "Každý návrh začíná průzkumem pozemku: světlo, terén, sousedé, cesty a paměť místa."],
   ["Hmota", "Hledáme jednoduchý tvar, který drží celek. Detail přichází až potom, ne místo něj."],
@@ -64,9 +79,9 @@ export default function StudioPage() {
             po kolaudaci.
           </p>
         </div>
-        <ul className="team">
-          {team.map((p) => (
-            <li key={p.name} className="person">
+        <ul className="grid team">
+          {team.map((p, i) => (
+            <li key={p.name} className="person" style={slot(i)}>
               <Avatar kind={p.avatar} title={`Ilustrace: ${p.name}`} />
               <p className="person-name">{p.name}</p>
               <p className="label">

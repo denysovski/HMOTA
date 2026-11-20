@@ -8,6 +8,8 @@ import type { Volume } from "@/content/schema";
 
 export interface HeroSceneProps {
   massing: Volume[];
+  /** label elements for the named volumes, in order; positioned by the scene every frame */
+  labels: MutableRefObject<(HTMLElement | null)[]>;
   progress: MutableRefObject<number>;
   active: boolean;
   onReady?: () => void;
@@ -117,9 +119,83 @@ function Tag({
   );
 }
 
+/**
+ * A label held away from the building, joined to the top of a volume by a hairline. The anchor
+ * follows the volume as it rises, so the label and its line travel up with the building.
+ */
+function Callout({
+  anchor,
+  offset,
+  opacity,
+  el,
+}: {
+  anchor: (out: THREE.Vector3) => void;
+  offset: [number, number, number];
+  opacity: () => number;
+  /** the label element (rendered by HeroModel above the canvas) */
+  el: () => HTMLElement | null | undefined;
+}) {
+  const { camera, size } = useThree();
+  const dot = useRef<THREE.Mesh>(null);
+  const a = useMemo(() => new THREE.Vector3(), []);
+  const p = useMemo(() => new THREE.Vector3(), []);
+  const line = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, 0], 3));
+    return g;
+  }, []);
+  const lineMat = useMemo(
+    () => new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0 }),
+    [],
+  );
+  const dotMat = useMemo(
+    () => new THREE.MeshBasicMaterial({ color: "#b8f000", transparent: true, opacity: 0 }),
+    [],
+  );
+  useFrame(() => {
+    anchor(a);
+    const o = opacity();
+    const pos = line.getAttribute("position") as THREE.BufferAttribute;
+    pos.setXYZ(0, a.x, a.y, a.z);
+    pos.setXYZ(1, a.x + offset[0], a.y + offset[1], a.z + offset[2]);
+    pos.needsUpdate = true;
+    line.computeBoundingSphere();
+    lineMat.opacity = 0.7 * o;
+    dotMat.opacity = o;
+    dot.current?.position.copy(a);
+    const node = el();
+    if (node) {
+      p.set(a.x + offset[0], a.y + offset[1], a.z + offset[2]).project(camera);
+      const x = ((p.x + 1) / 2) * size.width;
+      const y = ((1 - p.y) / 2) * size.height;
+      node.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
+      node.style.opacity = (p.z < 1 ? o : 0).toFixed(3);
+    }
+  });
+  return (
+    <>
+      <lineSegments geometry={line} material={lineMat} />
+      <mesh ref={dot} material={dotMat}>
+        <sphereGeometry args={[0.06, 16, 12]} />
+      </mesh>
+    </>
+  );
+}
+
+/** dimensions are a plan-and-section thing: shown at the start, gone once the clay fills in */
+const dimFade = (st: Stages) => st.draw * (1 - ease(clamp01(st.fill * 1.6)));
+
 const fmt = (m: number) => `${m.toFixed(1).replace(".", ",")} m`;
 
-function Building({ massing, stages }: { massing: Volume[]; stages: MutableRefObject<Stages> }) {
+function Building({
+  massing,
+  stages,
+  labels,
+}: {
+  massing: Volume[];
+  stages: MutableRefObject<Stages>;
+  labels: MutableRefObject<(HTMLElement | null)[]>;
+}) {
   const group = useRef<THREE.Group>(null);
   const b = useMemo(() => bounds(massing), [massing]);
   const { cx, cz } = b;
@@ -224,7 +300,7 @@ function Building({ massing, stages }: { massing: Volume[]; stages: MutableRefOb
     const ghost = new THREE.Group();
     const ghostMat = new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0 });
     const clayMat = new THREE.MeshStandardMaterial({
-      color: "#f7f7f5",
+      color: "#f3f3f0",
       roughness: 1,
       transparent: true,
       opacity: 0,
@@ -308,8 +384,13 @@ function Building({ massing, stages }: { massing: Volume[]; stages: MutableRefOb
     plan.setDrawRange(0, Math.floor((planCount * draw) / 2) * 2);
     contextPlanMat.opacity = 0.14 * draw;
     ctx.ghostMat.opacity = 0.16 * rise * (1 - 0.4 * fill);
-    ctx.clayMat.opacity = 0.55 * fill;
-    ctx.clayMat.depthWrite = fill > 0.95;
+    ctx.clayMat.opacity = fill;
+    const solid = fill > 0.98;
+    if (ctx.clayMat.transparent === solid) {
+      ctx.clayMat.transparent = !solid;
+      ctx.clayMat.needsUpdate = true;
+    }
+    ctx.clayMat.depthWrite = solid;
     const cast = fill > 0.35; // neighbours cast shadows only once they are filled in
     if (ctx.ghost.userData.cast !== cast) {
       ctx.ghost.userData.cast = cast;
@@ -317,7 +398,7 @@ function Building({ massing, stages }: { massing: Volume[]; stages: MutableRefOb
         if ((o as THREE.Mesh).isMesh) o.castShadow = cast;
       });
     }
-    dimMat.opacity = 0.75 * rise;
+    dimMat.opacity = 0.75 * dimFade(stages.current);
     for (const part of parts) {
       part.edgeMat.opacity = rise > 0 ? 0.9 - 0.45 * material : 0;
       part.mat.opacity = fill;
@@ -354,37 +435,32 @@ function Building({ massing, stages }: { massing: Volume[]; stages: MutableRefOb
       ))}
 
       {massing
-        .filter((v) => v.label)
-        .map((v, i) => (
-          <Tag
-            key={`pl${i}`}
-            position={[
-              (v.x + v.w / 2 - cx) * SCALE + (i % 2 ? 0.9 : 0),
-              (v.y + v.h) * SCALE + 0.35,
-              (v.z + v.d / 2 - cz) * SCALE,
-            ]}
-            opacity={() => s.current.draw * (0.4 + 0.6 * s.current.fill)}
-            className="hero-tag hero-tag-main"
-          >
-            {v.label} · {Math.round(v.w * v.d)} m²
-          </Tag>
-        ))}
-      {ctx.labels.map((l, i) => (
-        <Tag
-          key={`c${i}`}
-          position={l.pos}
-          opacity={() => 0.85 * s.current.fill * (1 - 0.35 * s.current.light)}
-        >
-          {l.text} · {l.h} m
-        </Tag>
-      ))}
-      <Tag position={dims.w.pos} opacity={() => s.current.rise} className="hero-tag hero-dim">
+        .map((v, i) => ({ v, i }))
+        .filter(({ v }) => v.label)
+        .map(({ v, i }, k) => {
+          const x = (v.x + v.w / 2 - cx) * SCALE;
+          const z = (v.z + v.d / 2 - cz) * SCALE;
+          const offsets: [number, number, number][] = [
+            [-1.9, 1.15, -0.7],
+            [2.1, 0.85, 1.5],
+          ];
+          return (
+            <Callout
+              key={`co${i}`}
+              anchor={(out) => out.set(x, (v.y + v.h) * SCALE * s.current.rise + 0.02, z)}
+              offset={offsets[k % 2]!}
+              opacity={() => s.current.draw}
+              el={() => labels.current[k]}
+            />
+          );
+        })}
+      <Tag position={dims.w.pos} opacity={() => dimFade(s.current)} className="hero-tag hero-dim">
         {dims.w.text}
       </Tag>
-      <Tag position={dims.d.pos} opacity={() => s.current.rise} className="hero-tag hero-dim">
+      <Tag position={dims.d.pos} opacity={() => dimFade(s.current)} className="hero-tag hero-dim">
         {dims.d.text}
       </Tag>
-      <Tag position={dims.h.pos} opacity={() => s.current.rise} className="hero-tag hero-dim">
+      <Tag position={dims.h.pos} opacity={() => dimFade(s.current)} className="hero-tag hero-dim">
         {dims.h.text}
       </Tag>
     </group>
@@ -404,9 +480,17 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
     const sx = [-halfW - STREET / 2, halfW + STREET / 2];
     const sz = [-halfD - STREET / 2, halfD + STREET / 2];
     const len = 260;
-    const roads: { x: number; z: number; w: number; d: number }[] = [];
-    for (const x of sx) roads.push({ x: u(x), z: 0, w: u(STREET - 6), d: u(len) });
-    for (const z of sz) roads.push({ x: 0, z: u(z), w: u(len), d: u(STREET - 6) });
+    // road edges, drawn like a plan: two kerb lines per street
+    const kerb: number[] = [];
+    const half = (STREET - 6) / 2;
+    for (const x of sx)
+      for (const side of [-half, half])
+        kerb.push(u(x + side), 0.006, u(-len / 2), u(x + side), 0.006, u(len / 2));
+    for (const z of sz)
+      for (const side of [-half, half])
+        kerb.push(u(-len / 2), 0.006, u(z + side), u(len / 2), 0.006, u(z + side));
+    const kerbG = new THREE.BufferGeometry();
+    kerbG.setAttribute("position", new THREE.Float32BufferAttribute(kerb, 3));
     const dash: number[] = [];
     for (const x of sx)
       for (let z = -len / 2; z < len / 2; z += 6)
@@ -446,13 +530,13 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
       [u(halfW + 1), 0, u(-halfD - 3)],
     ];
     const riverZ = u(-halfD - STREET - 26 - STREET - 12);
-    return { roads, dashG, treePos, peoplePos, riverZ };
+    return { kerbG, dashG, treePos, peoplePos, riverZ };
   }, [b]);
 
   const mats = useMemo(
     () => ({
-      road: new THREE.MeshBasicMaterial({ color: "#efefec", transparent: true, opacity: 0 }),
-      dash: new THREE.LineBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0 }),
+      road: new THREE.LineBasicMaterial({ color: "#0a0a0a", transparent: true, opacity: 0 }),
+      dash: new THREE.LineBasicMaterial({ color: "#0a0a0a", transparent: true, opacity: 0 }),
       water: new THREE.MeshBasicMaterial({ color: "#e3eaec", transparent: true, opacity: 0 }),
       crown: new THREE.MeshStandardMaterial({ color: "#f2f2ee", roughness: 1 }),
       trunk: new THREE.MeshStandardMaterial({ color: "#b9b4aa", roughness: 1 }),
@@ -465,8 +549,8 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
 
   useFrame(() => {
     const { draw, fill, material } = stages.current;
-    mats.road.opacity = 0.9 * draw;
-    mats.dash.opacity = 0.9 * fill;
+    mats.road.opacity = 0.16 * draw;
+    mats.dash.opacity = 0.1 * draw;
     mats.water.opacity = draw;
     mats.crown.color.copy(white).lerp(green, material);
     const g = ease(fill);
@@ -481,22 +565,11 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
 
   return (
     <group>
-      {data.roads.map((r, i) => (
-        <mesh key={i} position={[r.x, 0.003, r.z]} rotation-x={-Math.PI / 2} material={mats.road}>
-          <planeGeometry args={[r.w, r.d]} />
-        </mesh>
-      ))}
+      <lineSegments geometry={data.kerbG} material={mats.road} />
       <lineSegments geometry={data.dashG} material={mats.dash} />
       <mesh position={[0, 0.002, data.riverZ]} rotation-x={-Math.PI / 2} material={mats.water}>
         <planeGeometry args={[60, 4.5]} />
       </mesh>
-      <Tag
-        position={[-4, 0.1, data.riverZ]}
-        opacity={() => 0.8 * stages.current.draw}
-        className="hero-tag hero-tag-water"
-      >
-        Vltava · přístav Holešovice
-      </Tag>
       <group ref={trees}>
         {data.treePos.map((p, i) => (
           <group key={i} position={p}>
@@ -504,7 +577,7 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
               <cylinderGeometry args={[0.018, 0.024, 0.32, 6]} />
             </mesh>
             <mesh position={[0, 0.48, 0]} material={mats.crown} castShadow receiveShadow>
-              <icosahedronGeometry args={[0.26 + (i % 3) * 0.04, 1]} />
+              <sphereGeometry args={[0.26 + (i % 3) * 0.04, 28, 20]} />
             </mesh>
           </group>
         ))}
@@ -597,10 +670,10 @@ function Driver({
   progress: MutableRefObject<number>;
   stages: MutableRefObject<Stages>;
 }) {
-  const intro = useRef(0);
-  useFrame((_, dt) => {
+  // the plan was already drawn by the flat poster underneath, so the scene starts with it complete
+  const intro = useRef(1);
+  useFrame(() => {
     const p = progress.current;
-    intro.current = Math.min(1, intro.current + dt / 2.2);
     stages.current = {
       draw: Math.max(ease(intro.current), ease(range(p, 0.02, 0.2))),
       rise: easeIO(range(p, 0.22, 0.44)),
@@ -612,7 +685,14 @@ function Driver({
   return null;
 }
 
-export default function HeroScene({ massing, progress, active, onReady, onTime }: HeroSceneProps) {
+export default function HeroScene({
+  massing,
+  labels,
+  progress,
+  active,
+  onReady,
+  onTime,
+}: HeroSceneProps) {
   const stages = useRef<Stages>({ draw: 0, rise: 0, fill: 0, material: 0, light: 0 });
   return (
     <Canvas
@@ -638,7 +718,7 @@ export default function HeroScene({ massing, progress, active, onReady, onTime }
         <shadowMaterial opacity={0.16} />
       </mesh>
       <Site massing={massing} stages={stages} />
-      <Building massing={massing} stages={stages} />
+      <Building massing={massing} stages={stages} labels={labels} />
       <Rig progress={progress} />
     </Canvas>
   );

@@ -24,7 +24,7 @@ Demo website for a fictional architectural studio from Prague: a scroll-built 3D
 ## Desktop
 
 ![Landing page, the scroll-built model](docs/screens/desktop-1-hero.jpg)
-**Landing page.** One building drawn by your scroll: plan, section, massing, material and light. The model shows names, areas and dimensions in metres, the neighbouring blocks, streets, trees and the river.
+**Landing page.** One building drawn by your scroll: plan, section, massing, material and light. Its two volumes carry labels on lines that rise with the building; dimensions in metres show at the start and fade out. Around it: neighbouring blocks, streets, trees and the river.
 
 ![Map teaser with a project bubble](docs/screens/desktop-2-map-teaser.jpg)
 **Where we build.** Hover a pin on the home-page map: a bubble opens with the investor, the architects, the area and how long the job took.
@@ -53,7 +53,7 @@ Demo website for a fictional architectural studio from Prague: a scroll-built 3D
 
 ## What's inside
 
-- **Scroll-built 3D model** (landing page): plan → section → massing → material → light, with dimensions, names of volumes and neighbours, streets, trees, people for scale and a sun moving from 7:00 to 19:00.
+- **Scroll-built 3D model** (landing page): plan → section → massing → material → light, with callout labels that follow the building, dimensions at the start, streets, trees, people for scale and a sun moving from 7:00 to 19:00.
 - **3D map of Czechia** (`/mapa`): relief, contour lines, regions, rivers and cities; round pins for built, under construction and competition projects; hover cards, camera flights, URL filters, a loading screen and an accessible project list.
 - **Projects and project pages**: grid or list, filters, facts table (investor, architects, dates, duration, area), locator map, project text and drawings.
 - **Studio, contact, imprint, privacy and 404**: team portraits, enquiry form with custom selects, full imprint with company details.
