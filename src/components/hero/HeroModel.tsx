@@ -66,10 +66,10 @@ function PlanPoster({ massing }: { massing: Volume[] }) {
           ))}
         <rect
           pathLength={1}
-          x={minX - cx - 5}
-          y={minZ - cz - 5}
-          width={maxX - minX + 10}
-          height={maxZ - minZ + 10}
+          x={minX - cx - 2.5}
+          y={minZ - cz - 2.5}
+          width={maxX - minX + 5}
+          height={maxZ - minZ + 5}
         />
       </g>
     </svg>
@@ -204,6 +204,7 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
           </div>
         )}
         <div className="hero-fade" aria-hidden="true" />
+        <div className="hero-fade hero-fade-right" aria-hidden="true" />
         <h1 className="hero-title">{title}</h1>
         <div className="hero-caption" aria-live="off">
           <p className="hero-time" data-show={enabled && stage === STAGES.length - 1}>

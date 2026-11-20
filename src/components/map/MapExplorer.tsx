@@ -304,10 +304,12 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
       </div>
 
       <aside className="map-side" aria-label="Seznam projektů na mapě" data-lenis-prevent>
-        <p className="label">
-          {visible.size} {visible.size === 1 ? "stavba" : visible.size < 5 ? "stavby" : "staveb"} ·{" "}
-          {new Set(projects.filter((p) => visible.has(p.slug)).map((p) => p.region)).size} krajů
-        </p>
+        <div className="map-side-head">
+          <p className="label">
+            {visible.size} {visible.size === 1 ? "stavba" : visible.size < 5 ? "stavby" : "staveb"}{" "}
+            · {new Set(projects.filter((p) => visible.has(p.slug)).map((p) => p.region)).size} krajů
+          </p>
+        </div>
         {byRegion.map((g) => (
           <section key={g.region}>
             <h2 className="label">{regionLabel(g.region)}</h2>

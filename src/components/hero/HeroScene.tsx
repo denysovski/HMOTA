@@ -35,6 +35,7 @@ interface Stages {
   fill: number; // clay fill
   material: number; // concrete and glass
   light: number; // sun sweep
+  labels: number; // callouts draw in once scrolling starts
 }
 
 type Ctx = { minX: number; maxX: number; minZ: number; maxZ: number; cx: number; cz: number };
@@ -157,7 +158,7 @@ function Callout({
     const o = opacity();
     const pos = line.getAttribute("position") as THREE.BufferAttribute;
     pos.setXYZ(0, a.x, a.y, a.z);
-    pos.setXYZ(1, a.x + offset[0], a.y + offset[1], a.z + offset[2]);
+    pos.setXYZ(1, a.x + offset[0] * o, a.y + offset[1] * o, a.z + offset[2] * o);
     pos.needsUpdate = true;
     line.computeBoundingSphere();
     lineMat.opacity = 0.7 * o;
@@ -165,7 +166,7 @@ function Callout({
     dot.current?.position.copy(a);
     const node = el();
     if (node) {
-      p.set(a.x + offset[0], a.y + offset[1], a.z + offset[2]).project(camera);
+      p.set(a.x + offset[0] * o, a.y + offset[1] * o, a.z + offset[2] * o).project(camera);
       const x = ((p.x + 1) / 2) * size.width;
       const y = ((1 - p.y) / 2) * size.height;
       node.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
@@ -183,7 +184,7 @@ function Callout({
 }
 
 /** dimensions are a plan-and-section thing: shown at the start, gone once the clay fills in */
-const dimFade = (st: Stages) => st.draw * (1 - ease(clamp01(st.fill * 1.6)));
+const dimFade = (st: Stages) => ease(clamp01(st.rise * 1.4)) * (1 - ease(clamp01(st.fill * 1.6)));
 
 const fmt = (m: number) => `${m.toFixed(1).replace(".", ",")} m`;
 
@@ -240,6 +241,7 @@ function Building({
         });
 
         return {
+          mesh: undefined as THREE.Mesh | undefined,
           v,
           geo,
           edges,
@@ -279,7 +281,7 @@ function Building({
         (v.z + v.d - cz) * SCALE,
       );
     }
-    const m = 5;
+    const m = 2.5;
     rect(
       (b.minX - cx - m) * SCALE,
       (b.minZ - cz - m) * SCALE,
@@ -317,8 +319,10 @@ function Building({
       box.translate((x0 + x1) / 2, (v.h * SCALE) / 2, (z0 + z1) / 2);
       ghost.add(new THREE.LineSegments(new THREE.EdgesGeometry(box), ghostMat));
       const mesh = new THREE.Mesh(box, clayMat);
+      clayMat.depthWrite = false;
       mesh.castShadow = false;
-      mesh.receiveShadow = true;
+      mesh.receiveShadow = false;
+      mesh.renderOrder = -1;
       ghost.add(mesh);
       labels.push({
         pos: [(x0 + x1) / 2, v.h * SCALE + 0.25, (z0 + z1) / 2],
@@ -343,7 +347,7 @@ function Building({
     const z0 = (main.z - cz) * SCALE;
     const z1 = (main.z + main.d - cz) * SCALE;
     const H = (main.y + main.h) * SCALE;
-    const off = 0.45;
+    const off = 0.22; // inside the plot, clear of the street
     const t = 0.12;
     // prettier-ignore
     const pts = [
@@ -383,23 +387,12 @@ function Building({
     const { draw, rise, fill, material } = stages.current;
     plan.setDrawRange(0, Math.floor((planCount * draw) / 2) * 2);
     contextPlanMat.opacity = 0.14 * draw;
-    ctx.ghostMat.opacity = 0.16 * rise * (1 - 0.4 * fill);
-    ctx.clayMat.opacity = fill;
-    const solid = fill > 0.98;
-    if (ctx.clayMat.transparent === solid) {
-      ctx.clayMat.transparent = !solid;
-      ctx.clayMat.needsUpdate = true;
-    }
-    ctx.clayMat.depthWrite = solid;
-    const cast = fill > 0.35; // neighbours cast shadows only once they are filled in
-    if (ctx.ghost.userData.cast !== cast) {
-      ctx.ghost.userData.cast = cast;
-      ctx.ghost.traverse((o) => {
-        if ((o as THREE.Mesh).isMesh) o.castShadow = cast;
-      });
-    }
+    // neighbours stay a faint ghost: a hint of the street, never competing with the building
+    ctx.ghostMat.opacity = 0.1 * rise;
+    ctx.clayMat.opacity = 0.12 * fill;
     dimMat.opacity = 0.75 * dimFade(stages.current);
     for (const part of parts) {
+      if (part.mesh) part.mesh.castShadow = fill > 0.5;
       part.edgeMat.opacity = rise > 0 ? 0.9 - 0.45 * material : 0;
       part.mat.opacity = fill;
       part.mat.transparent = fill < 1 || part.v.glass;
@@ -428,7 +421,14 @@ function Building({
       <lineSegments geometry={dims.g} material={dimMat} />
       {parts.map((part, i) => (
         <group key={i} position={part.pos} userData={{ part: true, baseY: part.pos.y }}>
-          <mesh geometry={part.geo} material={part.mat} castShadow receiveShadow />
+          <mesh
+            geometry={part.geo}
+            material={part.mat}
+            receiveShadow
+            ref={(m) => {
+              if (m) part.mesh = m;
+            }}
+          />
           <lineSegments geometry={part.edges} material={part.edgeMat} />
           <lineSegments geometry={part.facade} material={part.facadeMat} />
         </group>
@@ -449,7 +449,7 @@ function Building({
               key={`co${i}`}
               anchor={(out) => out.set(x, (v.y + v.h) * SCALE * s.current.rise + 0.02, z)}
               offset={offsets[k % 2]!}
-              opacity={() => s.current.draw}
+              opacity={() => s.current.labels}
               el={() => labels.current[k]}
             />
           );
@@ -480,26 +480,67 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
     const sx = [-halfW - STREET / 2, halfW + STREET / 2];
     const sz = [-halfD - STREET / 2, halfD + STREET / 2];
     const len = 260;
-    // road edges, drawn like a plan: two kerb lines per street
-    const kerb: number[] = [];
+    // road edges, drawn like a plan: kerb lines and centre dashes, broken at every crossing
     const half = (STREET - 6) / 2;
+    const gaps = (lines: number[]) => lines.map((c) => [c - half, c + half] as const);
+    const segments = (from: number, to: number, cut: readonly (readonly [number, number])[]) => {
+      const out: [number, number][] = [];
+      let start = from;
+      for (const [a, b] of [...cut].sort((p, q) => p[0] - q[0])) {
+        if (a > start) out.push([start, a]);
+        start = Math.max(start, b);
+      }
+      if (start < to) out.push([start, to]);
+      return out;
+    };
+    // every line is cut into short pieces whose alpha falls off with distance from the plot,
+    // so the streets fade out into the paper instead of ending at an edge
+    const fade = (x: number, z: number) => {
+      const r = Math.hypot(x, z * 1.15);
+      return Math.max(0, Math.min(1, 1 - (r - 38) / 62)) ** 1.6;
+    };
+    const build = (segs: [number, number, number, number][], y: number) => {
+      const pos: number[] = [];
+      const col: number[] = [];
+      const step = 4;
+      for (const [x0, z0, x1, z1] of segs) {
+        const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, z1 - z0) / step));
+        for (let i = 0; i < n; i++) {
+          const ax = x0 + ((x1 - x0) * i) / n;
+          const az = z0 + ((z1 - z0) * i) / n;
+          const bx = x0 + ((x1 - x0) * (i + 1)) / n;
+          const bz = z0 + ((z1 - z0) * (i + 1)) / n;
+          const fa = fade(ax, az);
+          const fb = fade(bx, bz);
+          if (fa <= 0 && fb <= 0) continue;
+          pos.push(u(ax), y, u(az), u(bx), y, u(bz));
+          col.push(0, 0, 0, fa, 0, 0, 0, fb);
+        }
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(col, 4));
+      return g;
+    };
+    const kerbSegs: [number, number, number, number][] = [];
     for (const x of sx)
       for (const side of [-half, half])
-        kerb.push(u(x + side), 0.006, u(-len / 2), u(x + side), 0.006, u(len / 2));
+        for (const [z0, z1] of segments(-len / 2, len / 2, gaps(sz)))
+          kerbSegs.push([x + side, z0, x + side, z1]);
     for (const z of sz)
       for (const side of [-half, half])
-        kerb.push(u(-len / 2), 0.006, u(z + side), u(len / 2), 0.006, u(z + side));
-    const kerbG = new THREE.BufferGeometry();
-    kerbG.setAttribute("position", new THREE.Float32BufferAttribute(kerb, 3));
-    const dash: number[] = [];
+        for (const [x0, x1] of segments(-len / 2, len / 2, gaps(sx)))
+          kerbSegs.push([x0, z + side, x1, z + side]);
+    const kerbG = build(kerbSegs, 0.006);
+    const dashSegs: [number, number, number, number][] = [];
+    const inGap = (v: number, lines: number[]) => lines.some((c) => Math.abs(v - c) < half + 1);
     for (const x of sx)
       for (let z = -len / 2; z < len / 2; z += 6)
-        dash.push(u(x), 0.008, u(z), u(x), 0.008, u(z + 3));
+        if (!inGap(z, sz) && !inGap(z + 3, sz)) dashSegs.push([x, z, x, z + 3]);
     for (const z of sz)
       for (let x = -len / 2; x < len / 2; x += 6)
-        dash.push(u(x), 0.008, u(z), u(x + 3), 0.008, u(z));
-    const dashG = new THREE.BufferGeometry();
-    dashG.setAttribute("position", new THREE.Float32BufferAttribute(dash, 3));
+        if (!inGap(x, sx) && !inGap(x + 3, sx)) dashSegs.push([x, z, x + 3, z]);
+    const dashG = build(dashSegs, 0.008);
     const rnd = (i: number) => {
       const s = Math.sin(i * 91.7) * 43758.5453;
       return s - Math.floor(s);
@@ -535,9 +576,9 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
 
   const mats = useMemo(
     () => ({
-      road: new THREE.LineBasicMaterial({ color: "#0a0a0a", transparent: true, opacity: 0 }),
-      dash: new THREE.LineBasicMaterial({ color: "#0a0a0a", transparent: true, opacity: 0 }),
-      water: new THREE.MeshBasicMaterial({ color: "#e3eaec", transparent: true, opacity: 0 }),
+      road: new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0 }),
+      dash: new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0 }),
+      water: new THREE.MeshBasicMaterial({ color: "#c8ff2e", transparent: true, opacity: 0 }),
       crown: new THREE.MeshStandardMaterial({ color: "#f2f2ee", roughness: 1 }),
       trunk: new THREE.MeshStandardMaterial({ color: "#b9b4aa", roughness: 1 }),
       person: new THREE.MeshStandardMaterial({ color: "#3a3a38", roughness: 1 }),
@@ -549,9 +590,9 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
 
   useFrame(() => {
     const { draw, fill, material } = stages.current;
-    mats.road.opacity = 0.16 * draw;
-    mats.dash.opacity = 0.1 * draw;
-    mats.water.opacity = draw;
+    mats.road.opacity = 0.22 * draw;
+    mats.dash.opacity = 0.14 * draw;
+    mats.water.opacity = 0.3 * draw;
     mats.crown.color.copy(white).lerp(green, material);
     const g = ease(fill);
     if (trees.current) {
@@ -680,6 +721,7 @@ function Driver({
       fill: ease(range(p, 0.44, 0.6)),
       material: ease(range(p, 0.62, 0.78)),
       light: range(p, 0.62, 1),
+      labels: ease(range(p, 0.04, 0.2)),
     };
   });
   return null;
@@ -693,7 +735,7 @@ export default function HeroScene({
   onReady,
   onTime,
 }: HeroSceneProps) {
-  const stages = useRef<Stages>({ draw: 0, rise: 0, fill: 0, material: 0, light: 0 });
+  const stages = useRef<Stages>({ draw: 0, rise: 0, fill: 0, material: 0, light: 0, labels: 0 });
   return (
     <Canvas
       className="hero-canvas"

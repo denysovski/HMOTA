@@ -101,8 +101,8 @@ export default function Home() {
               pad={0.3}
               plan={false}
               notes={[
-                { vol: 0, text: "Čítárna v parteru · prosklená, 9 m", dx: -0.2, dy: 0.18 },
-                { vol: 1, text: "Studovny · horní světlo, 8 m", dx: 0.2, dy: -0.14 },
+                { vol: 0, text: "Čítárna v parteru · prosklená, 9 m", dx: -0.19, dy: 0.17 },
+                { vol: 1, text: "Studovny · horní světlo, 8 m", dx: 0.16, dy: -0.2 },
               ]}
               caption="Skica z první fáze, Knihovna Zábrdovice. Prověřujeme, jak se dvě hmoty skládají na sebe, kudy se vchází a kam dopadá světlo."
             />
@@ -123,9 +123,9 @@ export default function Home() {
               aspect={21 / 9}
               pad={0.3}
               notes={[
-                { vol: 0, text: "Nárožní hmota · 6 NP, 21 m", dx: -0.22, dy: -0.12 },
-                { vol: 1, text: "Křídlo do ulice · 46 bytů", dx: -0.24, dy: 0.16 },
-                { vol: 2, text: "Ustupující podlaží · terasy", dx: 0.2, dy: -0.12 },
+                { vol: 0, text: "Nárožní hmota · 6 NP, 21 m", dx: -0.15, dy: -0.2 },
+                { vol: 1, text: "Křídlo do ulice · 46 bytů", dx: -0.1, dy: 0.24 },
+                { vol: 2, text: "Ustupující podlaží · terasy", dx: 0.17, dy: -0.04 },
               ]}
               caption="Bytový dům Smíchov ve fázi pro stavební povolení. Hmota se ustálila, řešíme konstrukční raster 6 m, výšku podlaží 3,4 m a napojení na sousední domy. Limetkové linky jsou hranice pozemku."
             />

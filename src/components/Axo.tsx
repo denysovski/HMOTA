@@ -19,7 +19,7 @@ export interface AxoProps {
   className?: string;
   /** draw the site plan outline in lime under the building */
   plan?: boolean;
-  /** callouts: a leader line from the top of a volume to a label (HTML, so it stays readable) */
+  /** loose notes placed beside a volume (offset as a share of the frame), no leader lines */
   notes?: { vol: number; text: string; dx?: number; dy?: number }[];
   /** a short line under the drawing that says what it shows */
   caption?: string;
@@ -90,14 +90,18 @@ export function Axo({
   const callouts = (notes ?? []).flatMap((n) => {
     const v = vols.find((q) => q.i === n.vol);
     if (!v) return [];
-    const a = iso(v.x + v.w * 0.5, v.y + v.h, v.z + v.d * 0.5);
+    const a = iso(v.x + v.w * 0.5, v.y + v.h * 0.5, v.z + v.d * 0.5);
     const l: P = [a[0] + (n.dx ?? 0.18) * vw, a[1] + (n.dy ?? -0.16) * vh];
     return [{ a, l, text: n.text, right: (n.dx ?? 0.18) >= 0 }];
   });
-  const pct = (p: P) => ({
-    left: `${((p[0] - x0) / vw) * 100}%`,
-    top: `${((p[1] - y0) / vh) * 100}%`,
-  });
+  // keep every note inside the frame: left-side notes grow leftwards, right-side ones rightwards
+  const pct = (p: P, right: boolean) => {
+    const x = ((p[0] - x0) / vw) * 100;
+    return {
+      left: `${right ? Math.min(x, 66) : Math.max(x, 34)}%`,
+      top: `${Math.min(92, Math.max(6, ((p[1] - y0) / vh) * 100))}%`,
+    };
+  };
   const shadowDx = 0.35;
 
   const svg = (
@@ -232,26 +236,6 @@ export function Axo({
           );
         })}
       </g>
-      {callouts.length > 0 && (
-        <g stroke="#0a0a0a" strokeWidth={1} fill="none">
-          {callouts.map((c, i) => (
-            <g key={i}>
-              <circle
-                cx={c.a[0]}
-                cy={c.a[1]}
-                r={vw * 0.0035}
-                fill="#c8ff2e"
-                vectorEffect="non-scaling-stroke"
-              />
-              <polyline
-                points={pts([c.a, [c.a[0], c.l[1]], c.l])}
-                strokeOpacity={0.55}
-                vectorEffect="non-scaling-stroke"
-              />
-            </g>
-          ))}
-        </g>
-      )}
     </svg>
   );
   if (!callouts.length && !caption) return svg;
@@ -264,7 +248,7 @@ export function Axo({
             key={i}
             className="axo-note"
             data-side={c.right ? "right" : "left"}
-            style={pct(c.l)}
+            style={pct(c.l, c.right)}
           >
             {c.text}
           </span>
