@@ -1,7 +1,8 @@
 # Dependabot opens one pull request per group, once a month.
 # Each PR lives on its own short-lived "dependabot/..." branch, which is removed once the PR
 # is merged or closed. Major versions of TypeScript and @types/node are skipped: TypeScript 7
-# is a rewrite that Next.js does not support yet, and @types/node must match Node 22 used in CI.
+# is a rewrite that Next.js does not support yet, @types/node must match Node 22 used in CI, and
+# eslint-config-next does not support ESLint 10 yet.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -17,6 +18,8 @@ updates:
       - dependency-name: typescript
         update-types: ["version-update:semver-major"]
       - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: eslint
         update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
