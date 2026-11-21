@@ -13,6 +13,14 @@ import type { Volume } from "@/content/schema";
 import { ScrollTrigger, useGSAP, prefersReducedMotion } from "@/lib/motion";
 
 const HeroScene = dynamic(() => import("./HeroScene"), { ssr: false });
+// start fetching the 3D as soon as this module runs, not after the page has hydrated
+if (typeof window !== "undefined") void import("./HeroScene");
+
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+/** stills of the scene at 0 %, 10 % … 100 % of the scroll (scripts/hero-frames.py) */
+const frameSrc = (kind: "d" | "m", i: number) =>
+  `${BASE}/hero/${kind}${String(i).padStart(2, "0")}.webp`;
+const FRAME_HTML = `<picture><source media="(max-width: 767px)" srcset="${frameSrc("m", 0)}"><img src="${frameSrc("d", 0)}" alt="" decoding="async" fetchpriority="high"></picture><script>(function(){try{history.scrollRestoration="manual"}catch(e){}var t=function(){window.__heroTouched=1};["wheel","touchmove","keydown"].forEach(function(e){addEventListener(e,t,{passive:true,once:true})});var s=document.currentScript,h=s.closest(".hero"),img=s.previousElementSibling.querySelector("img"),so=s.previousElementSibling.querySelector("source"),last=0;function u(){var span=h.offsetHeight-innerHeight;var p=Math.min(1,Math.max(0,(scrollY-h.offsetTop)/span));var i=Math.round(p*10);if(i===last)return;last=i;var n=(i<10?"0":"")+i;img.src="${BASE}/hero/d"+n+".webp";so.srcset="${BASE}/hero/m"+n+".webp"}addEventListener("scroll",u,{passive:true});u()})()</script>`;
 
 const STAGES = [
   { at: 0, label: "Půdorys" },
@@ -88,12 +96,21 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
   useEffect(() => {
     // a reload always starts the build from the beginning, not from a restored scroll position
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-    window.scrollTo(0, 0);
+    // never pull back a visitor who already started scrolling while the page loaded
+    if (!(window as Window & { __heroTouched?: number }).__heroTouched) window.scrollTo(0, 0);
     // load the 3D straight away (not "when idle": idle never comes while the visitor scrolls)
     if (isStill()) return;
     void import("./HeroScene");
+    // warm the stills too (~25 kB each), so a fast scroll finds every one of them ready
+    const kind = window.matchMedia("(max-width: 767px)").matches ? "m" : "d";
+    const warm = window.setTimeout(() => {
+      for (let i = 1; i <= 10; i++) new Image().src = frameSrc(kind, i);
+    }, 300);
     const raf = requestAnimationFrame(() => setEnabled(true));
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(warm);
+    };
   }, []);
 
   useEffect(() => {
@@ -169,6 +186,17 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
         <div className="hero-poster" data-hidden={ready ? "true" : "false"}>
           {still ? poster : null}
         </div>
+        {!still && (
+          // while the 3D loads, a still of the scene at the current scroll point stands in for
+          // it, so scrolling straight away never shows an empty screen; the canvas fades in over it
+          <div
+            className="hero-frame"
+            data-ready={ready}
+            // React never touches the inside: the inline script swaps the still from first paint,
+            // long before the page's JavaScript (and the 3D) have loaded
+            dangerouslySetInnerHTML={{ __html: FRAME_HTML }}
+          />
+        )}
         {enabled && (
           <HeroScene
             massing={massing}
