@@ -361,9 +361,9 @@ ol {
     color 260ms var(--ease-out);
 }
 .arrow svg {
+  display: block;
   width: 58%;
   height: 58%;
-  transition: transform 300ms var(--ease-out);
 }
 a:hover .arrow,
 button:hover .arrow,
@@ -371,10 +371,7 @@ a:focus-visible .arrow {
   background: var(--ink);
   color: var(--lime);
 }
-a:hover .arrow svg,
-button:hover .arrow svg {
-  transform: translateX(2px);
-}
+/* the arrow never moves; only its colours swap */
 /* inside a lime button the circle is ink, so it never disappears into the button */
 .btn-lime .arrow {
   background: var(--ink);
@@ -582,25 +579,38 @@ html[data-leaving="true"] body::before {
   padding: calc(var(--header-h) + 40px) var(--pad) calc(var(--pad) + 8px);
   background: var(--ink);
   color: var(--paper);
+  overscroll-behavior: contain;
+  touch-action: none;
   clip-path: inset(0 0 100% 0);
   visibility: hidden;
+  /* closing: a calm fade, nothing slides or jumps */
+  opacity: 0;
   transition:
-    clip-path 600ms var(--ease-io),
-    visibility 0s 600ms;
+    opacity 380ms var(--ease-out),
+    clip-path 0s 380ms,
+    visibility 0s 380ms;
 }
 .mobile-menu[data-open="true"] {
   clip-path: inset(0 0 0 0);
   visibility: visible;
+  opacity: 1;
   transition:
     clip-path 600ms var(--ease-io),
+    opacity 0s,
     visibility 0s;
 }
 .mobile-menu li {
   opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 500ms var(--ease-out),
-    transform 600ms var(--ease-out);
+  transition: opacity 260ms var(--ease-out);
+}
+.mobile-menu[data-open="true"] li {
+  animation: menu-item-in 600ms var(--ease-out) both;
+}
+@keyframes menu-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
 }
 .mobile-menu[data-open="true"] li {
   opacity: 1;
@@ -787,27 +797,63 @@ html[data-leaving="true"] body::before {
   display: inline-flex;
   cursor: default;
   transition:
-    transform 380ms var(--ease-out),
-    background-color 260ms var(--ease-out),
-    color 260ms var(--ease-out),
-    box-shadow 260ms var(--ease-out);
+    background-color 320ms var(--ease-out),
+    color 320ms var(--ease-out),
+    box-shadow 320ms var(--ease-out);
 }
-.hero-tag-anchor:hover .hero-tag-main {
+.hero-tag-main::before {
+  transition:
+    background-color 320ms var(--ease-out),
+    box-shadow 320ms var(--ease-out);
+}
+/* ink label: hover turns it lime */
+.hero-tag-anchor:hover .hero-tag-main[data-variant="ink"] {
   background: var(--lime);
   color: var(--ink);
   box-shadow: 0 10px 26px rgb(10 10 10 / 0.22);
 }
-.hero-tag-anchor:hover .hero-tag-main::before {
+.hero-tag-anchor:hover .hero-tag-main[data-variant="ink"]::before {
   background: var(--ink);
   box-shadow: 0 0 0 3px rgb(10 10 10 / 0.12);
+}
+/* lime label (the main volume): the reverse, lime at rest and ink on hover */
+.hero-tag-main[data-variant="lime"] {
+  background: var(--lime);
+  color: var(--ink);
+}
+.hero-tag-main[data-variant="lime"]::before {
+  background: var(--ink);
+  box-shadow: none;
+}
+.hero-tag-anchor:hover .hero-tag-main[data-variant="lime"] {
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 10px 26px rgb(10 10 10 / 0.22);
+}
+.hero-tag-anchor:hover .hero-tag-main[data-variant="lime"]::before {
+  background: var(--lime);
+  box-shadow: 0 0 0 3px rgb(200 255 46 / 0.22);
+}
+.hero-tag-anchor .hero-tag-spec {
+  display: flex;
+  width: max-content;
+  max-width: min(320px, 70vw);
+  white-space: normal;
+  line-height: 1.35;
+  border-radius: 16px;
+  padding: 9px 14px 9px 12px;
+  align-items: flex-start;
+}
+.hero-tag-spec::before {
+  margin-top: 5px;
 }
 .hero-ring {
   position: absolute;
   left: var(--pad);
-  bottom: calc(var(--pad) + clamp(40px, 5.8vw, 108px) * 2.7 + 18px);
+  bottom: calc(var(--pad) + clamp(40px, 5.8vw, 108px) * 2.7 + 22px);
   z-index: 2;
-  width: 38px;
-  height: 38px;
+  width: 78px;
+  height: 78px;
   transform: rotate(-90deg);
   pointer-events: none;
 }
@@ -921,7 +967,6 @@ html[data-leaving="true"] body::before {
   border-radius: 999px;
   background: var(--ink);
   color: var(--paper);
-  border: 1px solid var(--lime);
   font-weight: 500;
   letter-spacing: 0.01em;
   box-shadow: 0 6px 18px rgb(10 10 10 / 0.18);
@@ -1147,6 +1192,17 @@ html[data-leaving="true"] body::before {
 .scatter-item .tag {
   color: var(--label);
 }
+.scatter-facts {
+  display: none;
+  gap: 6px;
+  margin-top: 8px;
+}
+.scatter-facts span {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--paper-2);
+  font-size: 11px;
+}
 
 .status-chip {
   display: inline-flex;
@@ -1340,8 +1396,9 @@ html[data-leaving="true"] body::before {
 /* radial hairlines */
 .radial {
   position: relative;
-  height: min(120vw, 105vh);
-  min-height: 560px;
+  height: min(100vw, 90vh);
+  min-height: 520px;
+  overflow: hidden;
 }
 .radial svg {
   position: absolute;
@@ -1362,6 +1419,14 @@ html[data-leaving="true"] body::before {
   font-size: var(--t-xs);
   transform: translate(-50%, -50%);
   white-space: nowrap;
+}
+@media (max-width: 767px) {
+  .radial-label {
+    max-width: 30vw;
+    white-space: normal;
+    text-align: center;
+    font-size: 11px;
+  }
 }
 
 .cta {
@@ -1968,8 +2033,8 @@ html[data-leaving="true"] body::before {
     transform 380ms var(--ease-out);
 }
 .social-dot svg {
-  width: 26px;
-  height: 26px;
+  width: 40%;
+  height: 40%;
 }
 .social-dot:hover,
 .social-dot:focus-visible {
@@ -2046,8 +2111,10 @@ html[data-leaving="true"] body::before {
     box-shadow 200ms var(--ease-out);
 }
 .field textarea {
-  min-height: 140px;
-  resize: vertical;
+  min-height: 48px;
+  resize: none; /* grows with the text instead (field-sizing, JS fallback) */
+  field-sizing: content;
+  overflow: hidden;
 }
 .field label {
   transition: color 200ms var(--ease-out);
@@ -2072,6 +2139,21 @@ html[data-leaving="true"] body::before {
   color: #b42318;
   font-size: var(--t-xs);
   margin-top: 6px;
+  animation: error-in 420ms var(--ease-out) both;
+}
+@keyframes error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.form-status {
+  animation: error-in 420ms var(--ease-out) both;
+}
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 .form {
   position: relative;
@@ -2247,9 +2329,36 @@ html[data-leaving="true"] body::before {
   .intro-services p:first-child {
     grid-column: 1 / -1;
   }
+  /* phones: selected work two by two, the right column a step lower */
+  .scatter {
+    row-gap: 36px;
+  }
   .scatter-item {
-    grid-column: 1 / -1 !important;
+    grid-column: span 3 !important;
     margin-top: 0 !important;
+  }
+  .scatter-item:nth-child(even) {
+    margin-top: 48px !important;
+  }
+  .scatter-media {
+    aspect-ratio: 4 / 5 !important;
+  }
+  .scatter-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  .scatter-title .tag {
+    display: block;
+  }
+  .scatter-wide {
+    display: none;
+  }
+  .scatter-facts {
+    display: flex !important;
   }
   .map-page {
     grid-template-columns: 1fr;
@@ -2358,8 +2467,8 @@ html[data-leaving="true"] body::before {
     left: auto;
     right: var(--pad);
     bottom: var(--pad);
-    width: 32px;
-    height: 32px;
+    width: 64px;
+    height: 64px;
   }
   /* on phones only the building's own names stay; neighbours and dimensions would crowd it */
   .hero-tag:not(.hero-tag-main) {
@@ -2436,6 +2545,11 @@ html.js .reveal {
 html {
   scrollbar-gutter: stable;
 }
+/* nothing (3D labels, scattered art) may ever widen the page sideways */
+html,
+body {
+  overflow-x: clip;
+}
 
 /* the map is a single full-screen view: no footer, only the side list scrolls (desktop) */
 body:has(.map-page) .site-footer {
@@ -2470,5 +2584,84 @@ body:has(.map-page) .site-footer {
   from {
     opacity: 0;
     transform: translateY(14px);
+  }
+}
+
+/* open position: text and a large drawn envelope */
+.hiring {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(32px, 5vw, 96px);
+  margin-top: clamp(96px, 12vw, 200px);
+  padding: clamp(32px, 5vw, 72px);
+  border-radius: 24px;
+  background: var(--paper-2);
+}
+.hiring-text {
+  display: grid;
+  gap: 18px;
+  justify-items: start;
+  max-width: 46ch;
+}
+.hiring-art {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.hiring-letter {
+  transition: transform 700ms var(--ease-out);
+}
+.hiring:hover .hiring-letter {
+  transform: translateY(-18px);
+}
+@media (max-width: 767px) {
+  .hiring {
+    grid-template-columns: 1fr;
+  }
+  .hiring-art {
+    order: -1;
+    max-width: 320px;
+    justify-self: center;
+  }
+}
+
+/* background drawings for the emptier sections */
+.has-deco {
+  position: relative;
+  isolation: isolate;
+}
+.deco {
+  position: absolute;
+  z-index: -1;
+  width: clamp(220px, 30vw, 460px);
+  height: auto;
+  color: var(--ink);
+  opacity: 0.12;
+  pointer-events: none;
+}
+.deco rect,
+.deco circle {
+  opacity: 1;
+}
+.deco-tr {
+  right: var(--pad);
+  top: clamp(24px, 4vw, 64px);
+}
+.deco-bl {
+  left: var(--pad);
+  bottom: clamp(24px, 4vw, 64px);
+}
+.deco-br {
+  right: var(--pad);
+  bottom: clamp(24px, 4vw, 64px);
+}
+.ink .deco {
+  color: var(--paper);
+}
+@media (max-width: 767px) {
+  .deco {
+    width: 56vw;
+    opacity: 0.08;
   }
 }

@@ -23,5 +23,6 @@ export function lockScroll(lock: boolean) {
     if (lock) instance.stop();
     else instance.start();
   }
-  document.documentElement.style.overflow = lock ? "hidden" : "";
+  // no overflow toggling on <html>: on phones that makes the page (and the menu) jump
+  document.documentElement.dataset.locked = lock ? "true" : "";
 }

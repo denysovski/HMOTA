@@ -41,6 +41,7 @@ interface Stages {
   trees: number; // trees grow in
   people: number; // people fade in on the pavements
   shadow: number; // shadows deepen from nothing once the volumes are solid
+  spec: number; // the one material note that replaces the volume labels
 }
 
 type Ctx = { minX: number; maxX: number; minZ: number; maxZ: number; cx: number; cz: number };
@@ -112,10 +113,12 @@ function Callout({
   /** the label element (rendered by HeroModel above the canvas) */
   el: () => HTMLElement | null | undefined;
 }) {
-  const { camera, size } = useThree();
+  const { camera, size, invalidate } = useThree();
   const dot = useRef<THREE.Mesh>(null);
   const a = useMemo(() => new THREE.Vector3(), []);
   const p = useMemo(() => new THREE.Vector3(), []);
+  const end = useMemo(() => new THREE.Vector3(), []);
+  const pull = useRef({ x: 0, y: 0 });
   const line = useMemo(() => {
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, 0], 3));
@@ -132,17 +135,27 @@ function Callout({
   useFrame(() => {
     anchor(a);
     const o = opacity();
+    const node = el();
+    // the label leans towards the cursor (target set by the page in data-mx/my), springing
+    // smoothly; the line's end follows it so label and line move as one
+    const tx = Number(node?.dataset.mx ?? 0);
+    const ty = Number(node?.dataset.my ?? 0);
+    pull.current.x += (tx - pull.current.x) * 0.16;
+    pull.current.y += (ty - pull.current.y) * 0.16;
+    if (Math.abs(tx - pull.current.x) + Math.abs(ty - pull.current.y) > 0.05) invalidate();
+    p.set(a.x + offset[0] * o, a.y + offset[1] * o, a.z + offset[2] * o).project(camera);
+    p.x += (2 * pull.current.x) / size.width;
+    p.y -= (2 * pull.current.y) / size.height;
+    end.copy(p).unproject(camera);
     const pos = line.getAttribute("position") as THREE.BufferAttribute;
     pos.setXYZ(0, a.x, a.y, a.z);
-    pos.setXYZ(1, a.x + offset[0] * o, a.y + offset[1] * o, a.z + offset[2] * o);
+    pos.setXYZ(1, end.x, end.y, end.z);
     pos.needsUpdate = true;
     line.computeBoundingSphere();
     lineMat.opacity = 0.7 * o;
     dotMat.opacity = o;
     dot.current?.position.copy(a);
-    const node = el();
     if (node) {
-      p.set(a.x + offset[0] * o, a.y + offset[1] * o, a.z + offset[2] * o).project(camera);
       const x = ((p.x + 1) / 2) * size.width;
       const y = ((1 - p.y) / 2) * size.height;
       node.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
@@ -283,6 +296,9 @@ function Building({
     });
     const labels: { pos: [number, number, number]; text: string; h: number }[] = [];
     const meshes: THREE.Mesh[] = [];
+    // a white footprint under every neighbour: shadows cannot pass through a building, so
+    // the ground it stands on never shows a shadow through its translucent walls
+    const capMat = new THREE.MeshBasicMaterial({ color: "#ffffff", toneMapped: false });
     for (const v of vols) {
       const x0 = (v.x - cx) * SCALE;
       const z0 = (v.z - cz) * SCALE;
@@ -300,6 +316,10 @@ function Building({
       meshes.push(mesh);
       mesh.renderOrder = -1;
       ghost.add(mesh);
+      const cap = new THREE.Mesh(new THREE.PlaneGeometry(v.w * SCALE, v.d * SCALE), capMat);
+      cap.rotation.x = -Math.PI / 2;
+      cap.position.set((x0 + x1) / 2, 0.003, (z0 + z1) / 2);
+      ghost.add(cap);
       labels.push({
         pos: [(x0 + x1) / 2, v.h * SCALE + 0.25, (z0 + z1) / 2],
         text: v.label,
@@ -385,6 +405,22 @@ function Building({
             />
           );
         })}
+      {(() => {
+        // one note for the whole building once it turns into material: from the top corner
+        // of the tallest volume, out into the free sky
+        const named = massing.filter((v) => v.label).length;
+        const t = massing.reduce((m, v) => (v.y + v.h > m.y + m.h ? v : m), massing[0]!);
+        const x = (t.x + t.w - cx) * SCALE;
+        const z = (t.z - cz) * SCALE;
+        return (
+          <Callout
+            anchor={(out) => out.set(x, (t.y + t.h) * SCALE * s.current.rise + 0.02, z)}
+            offset={[1.6, 1.25, -1.4]}
+            opacity={() => s.current.spec}
+            el={() => labels.current[named]}
+          />
+        );
+      })()}
     </group>
   );
 }
@@ -421,11 +457,19 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
       const r = Math.hypot(x, z * 1.15);
       return Math.max(0, Math.min(1, 1 - (r - 38) / 62)) ** 1.6;
     };
+    // the lime strip closes the street space: nothing runs on beyond its near edge
+    const stripM = -halfD - STREET - 26 - STREET - 12;
+    const edge = stripM + 2.25 / SCALE;
     const build = (segs: [number, number, number, number][], y: number) => {
       const pos: number[] = [];
       const col: number[] = [];
       const step = 4;
-      for (const [x0, z0, x1, z1] of segs) {
+      for (const seg of segs) {
+        const [x0, , x1] = seg;
+        let [, z0, , z1] = seg;
+        if (z0 < edge && z1 < edge) continue;
+        if (z0 < edge) z0 = edge;
+        if (z1 < edge) z1 = edge;
         const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, z1 - z0) / step));
         for (let i = 0; i < n; i++) {
           const ax = x0 + ((x1 - x0) * i) / n;
@@ -496,7 +540,7 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
       [u(-halfW - 36), 0, u(sz[0]! - walk)],
       [u(4), 0, u(sz[0]! + walk)],
     ];
-    const riverZ = u(-halfD - STREET - 26 - STREET - 12);
+    const riverZ = u(stripM);
     return { kerbG, dashG, treePos, peoplePos, riverZ };
   }, [b]);
 
@@ -561,12 +605,35 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
       </group>
       <group ref={people}>
         {data.peoplePos.map((p, i) => (
-          <group key={i} position={p}>
-            <mesh position={[0, 0.085, 0]} material={mats.person} castShadow>
-              <capsuleGeometry args={[0.022, 0.12, 3, 8]} />
+          <group key={i} position={p} rotation-y={i * 1.7}>
+            {/* legs apart, arms away from the body: a person, not a post */}
+            <mesh
+              position={[-0.016, 0.045, 0]}
+              rotation-z={-0.18}
+              material={mats.person}
+              castShadow
+            >
+              <capsuleGeometry args={[0.009, 0.07, 3, 6]} />
             </mesh>
-            <mesh position={[0, 0.185, 0]} material={mats.person} castShadow>
-              <sphereGeometry args={[0.022, 10, 8]} />
+            <mesh position={[0.016, 0.045, 0]} rotation-z={0.18} material={mats.person} castShadow>
+              <capsuleGeometry args={[0.009, 0.07, 3, 6]} />
+            </mesh>
+            <mesh position={[0, 0.125, 0]} material={mats.person} castShadow>
+              <capsuleGeometry args={[0.019, 0.05, 3, 8]} />
+            </mesh>
+            <mesh
+              position={[-0.034, 0.118, 0]}
+              rotation-z={-0.42}
+              material={mats.person}
+              castShadow
+            >
+              <capsuleGeometry args={[0.007, 0.062, 3, 6]} />
+            </mesh>
+            <mesh position={[0.034, 0.118, 0]} rotation-z={0.42} material={mats.person} castShadow>
+              <capsuleGeometry args={[0.007, 0.062, 3, 6]} />
+            </mesh>
+            <mesh position={[0, 0.19, 0]} material={mats.person} castShadow>
+              <sphereGeometry args={[0.02, 10, 8]} />
             </mesh>
           </group>
         ))}
@@ -682,14 +749,18 @@ function Driver({
     const p = progress.current;
     const t = intro.current;
     const scrolled = range(p, 0.02, 0.2);
+    // while "Jeden dům od půdorysu po světlo." is on screen the plan stays a faint backdrop
+    const calm = 0.28 + 0.72 * ease(range(p, 0.004, 0.03));
     stages.current = {
-      draw: Math.max(ease(t), scrolled),
-      main: Math.max(ease(t), scrolled),
+      draw: Math.max(ease(t) * calm, scrolled),
+      main: Math.max(ease(t) * calm, scrolled),
       rise: easeIO(range(p, 0.22, 0.44)),
       fill: ease(range(p, 0.44, 0.6)),
       material: ease(range(p, 0.6, 0.86)),
       light: range(p, 0.62, 1),
-      labels: ease(range(p, 0.04, 0.2)),
+      // the volume labels hand over to one material note as the build turns into material
+      labels: ease(range(p, 0.04, 0.2)) * (1 - ease(range(p, 0.55, 0.61))),
+      spec: ease(range(p, 0.62, 0.7)),
       trees: ease(range(p, 0.46, 0.76)),
       people: ease(range(p, 0.58, 0.78)),
       shadow: ease(range(p, 0.5, 0.76)),
@@ -710,6 +781,7 @@ function HeroScene({ massing, labels, progress, active, onReady, onTime, kick }:
     trees: 0,
     people: 0,
     shadow: 0,
+    spec: 0,
   });
   return (
     <Canvas

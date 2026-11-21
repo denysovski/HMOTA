@@ -45,22 +45,27 @@ interface Props {
   projectName: string;
 }
 
-// the two building labels lean a little towards the cursor (a few px), and spring back on leave
-const PULL = 0.22;
-const MAX = 7;
-function magnet(e: React.PointerEvent<HTMLElement>) {
+// labels lean towards the cursor within a small radius; the scene springs label and line together
+const PULL = 0.32;
+const MAX = 16;
+function aim(e: React.PointerEvent<HTMLElement>, kick: () => void) {
   if (e.pointerType !== "mouse") return;
   const el = e.currentTarget;
   const r = el.getBoundingClientRect();
   const dx = Math.max(-MAX, Math.min(MAX, (e.clientX - (r.left + r.width / 2)) * PULL));
   const dy = Math.max(-MAX, Math.min(MAX, (e.clientY - (r.top + r.height / 2)) * PULL));
-  const tag = el.firstElementChild as HTMLElement | null;
-  if (tag) tag.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0)`;
+  el.dataset.mx = dx.toFixed(1);
+  el.dataset.my = dy.toFixed(1);
+  kick();
 }
-function release(e: React.PointerEvent<HTMLElement>) {
-  const tag = e.currentTarget.firstElementChild as HTMLElement | null;
-  if (tag) tag.style.transform = "";
+function rest(e: React.PointerEvent<HTMLElement>, kick: () => void) {
+  e.currentTarget.dataset.mx = "0";
+  e.currentTarget.dataset.my = "0";
+  kick();
 }
+
+const MATERIAL_NOTE =
+  "Brutalismus · pohledový beton z prkenného bednění, hrubý kartáčovaný beton, černá ocel, čiré sklo";
 
 /** The scroll-built building: plan, section, massing, material, light. Pinned with CSS sticky. */
 export function HeroModel({ massing, poster, title, projectName }: Props) {
@@ -188,14 +193,23 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
                 }}
                 className="hero-tag-anchor"
                 style={{ opacity: 0, pointerEvents: "none" }}
-                onPointerMove={magnet}
-                onPointerLeave={release}
+                onPointerMove={(e) => aim(e, () => kick.current?.())}
+                onPointerLeave={(e) => rest(e, () => kick.current?.())}
               >
-                <span className="hero-tag hero-tag-main">
+                <span className="hero-tag hero-tag-main" data-variant={k === 0 ? "lime" : "ink"}>
                   {v.label} · {Math.round(v.w * v.d)} m²
                 </span>
               </span>
             ))}
+            <span
+              ref={(el) => {
+                labels.current[named.length] = el;
+              }}
+              className="hero-tag-anchor"
+              style={{ opacity: 0, pointerEvents: "none" }}
+            >
+              <span className="hero-tag hero-tag-main hero-tag-spec">{MATERIAL_NOTE}</span>
+            </span>
           </div>
         )}
         <div className="hero-fade" aria-hidden="true" />

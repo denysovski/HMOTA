@@ -151,6 +151,13 @@ export function ContactForm() {
               id="message"
               name="message"
               placeholder="Pozemek, stávající stav, co potřebujete…"
+              rows={1}
+              onInput={(e) => {
+                // grow (and shrink) with the text, one line at a time
+                const t = e.currentTarget;
+                t.style.height = "auto";
+                t.style.height = `${t.scrollHeight}px`;
+              }}
               {...aria("message")}
             />,
           )}

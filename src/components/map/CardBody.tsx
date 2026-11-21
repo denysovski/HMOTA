@@ -37,7 +37,7 @@ export function CardBody({ p, onClose }: { p: Project; onClose?: () => void }) {
           <dd className="num">{area(p.areaM2)}</dd>
         </dl>
         <div className="actions">
-          <Link href={`/projekty/${p.slug}`} className="u">
+          <Link href={`/projekty/${p.slug}`} className="card-link">
             Detail projektu <Arrow />
           </Link>
           {onClose && (

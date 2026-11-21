@@ -62,14 +62,19 @@ export function ScatterGrid({ items }: { items: Project[] }) {
               <Axo massing={p.massing} aspect={s.aspect} title={`Axonometrie: ${p.name}`} />
             </div>
             <div className="scatter-meta">
-              <span>
+              <span className="scatter-title">
                 {p.name} <span className="tag">· {p.municipality}</span>
               </span>
-              <span className="num">{area(p.areaM2)}</span>
+              <span className="num scatter-wide">{area(p.areaM2)}</span>
             </div>
             <div className="scatter-meta" style={{ marginTop: 2 }}>
               <span className="tag">{typeLabel(p)}</span>
-              <span className="tag num">{year(p)}</span>
+              <span className="tag num scatter-wide">{year(p)}</span>
+            </div>
+            {/* phones: area and year move under the text as two small facts */}
+            <div className="scatter-facts">
+              <span className="num">{area(p.areaM2)}</span>
+              <span className="num">{year(p)}</span>
             </div>
           </Link>
         );

@@ -101,7 +101,7 @@ export function Header() {
         <nav aria-label="Menu">
           <ul>
             {nav.map((n, i) => (
-              <li key={n.href} style={{ transitionDelay: open ? `${120 + i * 60}ms` : "0ms" }}>
+              <li key={n.href} style={{ animationDelay: `${120 + i * 60}ms` }}>
                 <Link
                   href={n.href}
                   tabIndex={open ? 0 : -1}

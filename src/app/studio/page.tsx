@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { Avatar } from "@/components/Avatar";
 import { site, team } from "@/lib/site";
 import { SocialScatter } from "@/components/SocialScatter";
+import { Hiring } from "@/components/Hiring";
+import { Deco } from "@/components/Deco";
 
 export const metadata: Metadata = {
   title: "Studio",
@@ -55,7 +56,8 @@ export default function StudioPage() {
           celé republice a ke každé zakázce přistupujeme jako k jedinečnému místu.
         </Reveal>
       </div>
-      <section className="section-tight">
+      <section className="section-tight has-deco">
+        <Deco kind="steps" className="deco-tr" />
         <table className="table">
           <caption className="label">Přístup</caption>
           <tbody>
@@ -95,13 +97,7 @@ export default function StudioPage() {
             ))}
           </ul>
         </div>
-        <p className="small muted" style={{ marginTop: 40 }}>
-          Hledáme architekta nebo architektku do týmu soutěží.{" "}
-          <Link href="/kontakt" className="u">
-            Napište nám
-          </Link>
-          .
-        </p>
+        <Hiring />
       </section>
     </div>
   );

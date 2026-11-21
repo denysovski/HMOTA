@@ -10,6 +10,7 @@ import { Magnetic } from "@/components/Magnetic";
 import { featured, projects } from "@/content/projects";
 import { disciplines, recognition, site } from "@/lib/site";
 import { Arrow } from "@/components/Arrow";
+import { Deco } from "@/components/Deco";
 
 export default function Home() {
   const hero = featured[0] ?? projects[0]!;
@@ -31,7 +32,8 @@ export default function Home() {
         }
       />
 
-      <section className="wrap section" aria-labelledby="intro-title">
+      <section className="wrap section has-deco" aria-labelledby="intro-title">
+        <Deco kind="arcs" className="deco-tr" />
         <div className="intro-head">
           <Reveal as="h2" className="h2" id="intro-title">
             Klidná forma,
@@ -92,7 +94,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="wrap section" aria-label="Jak pracujeme">
+      <section className="wrap section has-deco" aria-label="Jak pracujeme">
+        <Deco kind="grid" className="deco-bl" />
         <div className="grid process">
           <div className="process-drawing">
             <Axo
@@ -197,7 +200,8 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <section className="wrap section cta" aria-labelledby="cta">
+        <section className="wrap section cta has-deco" aria-labelledby="cta">
+          <Deco kind="steps" className="deco-br" />
           <h2 className="h2" id="cta">
             Máte pozemek,
             <br />

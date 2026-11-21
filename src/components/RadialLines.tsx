@@ -27,7 +27,8 @@ export function RadialLines({ labels, title }: Props) {
   const { w, h } = size;
   const items = labels.map((label, i) => {
     const a = (i / n) * Math.PI * 2 - Math.PI / 2 + 0.18;
-    const r = 0.44 + (i % 3) * 0.03;
+    // short lines, close to the headline; on narrow screens a touch longer but always inside
+    const r = (w < 700 ? 0.34 : 0.3) + (i % 3) * 0.025;
     const px = (fx: number, fy: number) => [w * fx, h * fy] as const;
     const [x, y] = px(0.5 + Math.cos(a) * r, 0.5 + Math.sin(a) * r * 0.92);
     const bend = 0.22 * (i % 2 ? 1 : -1);
@@ -35,7 +36,7 @@ export function RadialLines({ labels, title }: Props) {
     const [sx, sy] = px(0.5 + Math.cos(a) * 0.12, 0.5 + Math.sin(a) * 0.09);
     return {
       label,
-      left: (x / w) * 100,
+      left: Math.min(84, Math.max(16, (x / w) * 100)),
       top: (y / h) * 100,
       d: `M ${sx.toFixed(1)} ${sy.toFixed(1)} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`,
     };
