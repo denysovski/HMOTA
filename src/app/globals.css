@@ -394,7 +394,7 @@ a:focus-visible .arrow {
   display: inline-flex;
   align-items: center;
   gap: 0.35em;
-  margin-top: 12px;
+  margin-top: 50px; /* air between the small "Další projekt" label and the name */
 }
 .next-link .arrow {
   width: 1.05em;
