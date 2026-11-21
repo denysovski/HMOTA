@@ -1,0 +1,4 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://denysovski.github.io/HMOTA/sitemap.xml
