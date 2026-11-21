@@ -710,6 +710,12 @@ html[data-leaving="true"] body::before {
 .hero-canvas {
   position: absolute;
   inset: 0;
+  animation: hero-canvas-in 500ms var(--ease-out) both;
+}
+@keyframes hero-canvas-in {
+  from {
+    opacity: 0;
+  }
 }
 .hero-poster {
   display: grid;

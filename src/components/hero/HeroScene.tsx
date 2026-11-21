@@ -40,6 +40,7 @@ interface Stages {
   labels: number; // callouts draw in once scrolling starts
   trees: number; // trees grow in
   people: number; // people fade in on the pavements
+  shadow: number; // shadows deepen from nothing once the volumes are solid
 }
 
 type Ctx = { minX: number; maxX: number; minZ: number; maxZ: number; cx: number; cz: number };
@@ -534,7 +535,7 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
       people.current.visible = walkers > 0.01;
       people.current.position.y = (1 - walkers) * 0.08;
       people.current.children.forEach((c) =>
-        c.children.forEach((m) => ((m as THREE.Mesh).castShadow = walkers > 0.6)),
+        c.children.forEach((m) => ((m as THREE.Mesh).castShadow = walkers > 0.01)),
       );
     }
   });
@@ -597,6 +598,18 @@ function Rig({ progress }: { progress: MutableRefObject<number> }) {
   return null;
 }
 
+function Ground({ stages }: { stages: MutableRefObject<Stages> }) {
+  const mat = useMemo(() => new THREE.ShadowMaterial({ opacity: 0 }), []);
+  useFrame(() => {
+    mat.opacity = 0.11 * stages.current.shadow;
+  });
+  return (
+    <mesh rotation-x={-Math.PI / 2} receiveShadow material={mat}>
+      <planeGeometry args={[300, 300]} />
+    </mesh>
+  );
+}
+
 function Sun({
   stages,
   onTime,
@@ -618,6 +631,8 @@ function Sun({
       light.current.intensity = 1.2 + 1.6 * clamp01(stages.current.material * 1.4);
       const warm = t > 0 ? 1 - Math.sin(Math.PI * t) : 0; // warm low sun morning and evening
       light.current.color.setRGB(1, 1 - 0.1 * warm, 1 - 0.22 * warm);
+      // casters switch on while this is still 0, so shadows only ever fade in, never pop
+      light.current.shadow.intensity = stages.current.shadow;
     }
     const rounded = Math.round(hour * 4) / 4;
     if (rounded !== last.current) {
@@ -651,12 +666,13 @@ function Driver({
   progress: MutableRefObject<number>;
   stages: MutableRefObject<Stages>;
 }) {
-  // on load the plan fades in by itself (~1.3 s): the streets and neighbours first, the plot last
-  const intro = useRef(-0.08);
+  // on load the plan simply fades in (0.5 s); if the visitor already scrolled, the canvas fade
+  // is the whole intro and the model shows straight at the stage they scrolled to
+  const intro = useRef(progress.current > 0.02 ? 1 : 0);
   const last = useRef(-1);
   useFrame(({ gl, invalidate }, dt) => {
     if (intro.current < 1) {
-      intro.current = Math.min(1, intro.current + Math.min(dt, 0.05) / 1.3);
+      intro.current = Math.min(1, intro.current + Math.min(dt, 0.05) / 0.5);
       invalidate();
     }
     // the shadow map is the heaviest pass: redraw it only when the model or the sun changed
@@ -667,8 +683,8 @@ function Driver({
     const t = intro.current;
     const scrolled = range(p, 0.02, 0.2);
     stages.current = {
-      draw: Math.max(ease(clamp01(t / 0.6)), scrolled),
-      main: Math.max(ease(clamp01((t - 0.5) / 0.5)), scrolled),
+      draw: Math.max(ease(t), scrolled),
+      main: Math.max(ease(t), scrolled),
       rise: easeIO(range(p, 0.22, 0.44)),
       fill: ease(range(p, 0.44, 0.6)),
       material: ease(range(p, 0.6, 0.86)),
@@ -676,6 +692,7 @@ function Driver({
       labels: ease(range(p, 0.04, 0.2)),
       trees: ease(range(p, 0.46, 0.76)),
       people: ease(range(p, 0.58, 0.78)),
+      shadow: ease(range(p, 0.5, 0.76)),
     };
   });
   return null;
@@ -692,6 +709,7 @@ function HeroScene({ massing, labels, progress, active, onReady, onTime, kick }:
     labels: 0,
     trees: 0,
     people: 0,
+    shadow: 0,
   });
   return (
     <Canvas
@@ -715,10 +733,7 @@ function HeroScene({ massing, labels, progress, active, onReady, onTime, kick }:
       <Driver progress={progress} stages={stages} />
       <hemisphereLight args={["#ffffff", "#dcdcd6", 1.4]} />
       <Sun stages={stages} onTime={onTime} />
-      <mesh rotation-x={-Math.PI / 2} receiveShadow>
-        <planeGeometry args={[300, 300]} />
-        <shadowMaterial opacity={0.11} />
-      </mesh>
+      <Ground stages={stages} />
       <Site massing={massing} stages={stages} />
       <Building massing={massing} stages={stages} labels={labels} />
       <Rig progress={progress} />

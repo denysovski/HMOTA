@@ -84,12 +84,11 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
     // a reload always starts the build from the beginning, not from a restored scroll position
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
-    // load the 3D only after first paint, when idle, if WebGL exists and motion is welcome
+    // load the 3D straight away (not "when idle": idle never comes while the visitor scrolls)
     if (isStill()) return;
-    const start = () => setEnabled(true);
-    const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
-    if (w.requestIdleCallback) w.requestIdleCallback(start);
-    else setTimeout(start, 200);
+    void import("./HeroScene");
+    const raf = requestAnimationFrame(() => setEnabled(true));
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   useEffect(() => {
@@ -133,7 +132,7 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
     { scope: root },
   );
 
-  const current = enabled ? stage : STAGES.length - 1;
+  const current = still ? STAGES.length - 1 : stage;
   const stagesRef = useRef<HTMLOListElement>(null);
   const [pill, setPill] = useState<{ x: number; w: number; ready: boolean }>({
     x: 0,
