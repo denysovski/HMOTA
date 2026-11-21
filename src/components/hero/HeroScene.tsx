@@ -647,7 +647,14 @@ function Site({ massing, stages }: { massing: Volume[]; stages: MutableRefObject
   );
 }
 
-function Rig({ progress }: { progress: MutableRefObject<number> }) {
+function Rig({
+  progress,
+  snap,
+}: {
+  progress: MutableRefObject<number>;
+  /** while true the camera jumps straight to its target (warm-up behind the loader) */
+  snap: MutableRefObject<boolean>;
+}) {
   const { camera, size, invalidate } = useThree();
   // portrait screens need the camera further back to keep the building in frame
   const aspect = size.width / Math.max(1, size.height);
@@ -662,7 +669,8 @@ function Rig({ progress }: { progress: MutableRefObject<number> }) {
     const t1 = easeIO(range(p, 0.18, 0.46));
     const t2 = easeIO(range(p, 0.78, 1));
     tmp.copy(top).lerp(axo, t1).lerp(close, t2).multiplyScalar(fit);
-    camera.position.lerp(tmp, 0.12);
+    if (snap.current) camera.position.copy(tmp);
+    else camera.position.lerp(tmp, 0.12);
     if (camera.position.distanceToSquared(tmp) > 1e-6) invalidate();
     look.set(0, 0.6 * t1 + 0.4 * t2, 0);
     camera.lookAt(look);
@@ -717,13 +725,14 @@ function Sun({
       ref={light}
       castShadow
       intensity={1.2}
-      shadow-mapSize-width={small ? 1024 : 1536}
-      shadow-mapSize-height={small ? 1024 : 1536}
-      shadow-camera-left={-24}
-      shadow-camera-right={24}
-      shadow-camera-top={24}
-      shadow-camera-bottom={-24}
-      shadow-camera-far={80}
+      shadow-mapSize-width={small ? 2048 : 4096}
+      shadow-mapSize-height={small ? 2048 : 4096}
+      shadow-camera-left={-46}
+      shadow-camera-right={46}
+      shadow-camera-top={46}
+      shadow-camera-bottom={-46}
+      shadow-camera-near={0.5}
+      shadow-camera-far={140}
       shadow-bias={-0.00025}
       shadow-normalBias={0.004}
     />
@@ -731,18 +740,41 @@ function Sun({
 }
 
 /** turns scroll progress (plus a short intro on load) into the five stage values */
+// behind the loader the scene plays every stage once, so every shader, shadow and material
+// variant is compiled before the visitor can scroll: no first-time stutter later
+const WARM = [0.12, 0.3, 0.45, 0.55, 0.62, 0.7, 0.8, 0.9, 1, 0.5, 0];
+
 function Driver({
   progress,
   stages,
+  snap,
+  onReady,
 }: {
   progress: MutableRefObject<number>;
   stages: MutableRefObject<Stages>;
+  snap: MutableRefObject<boolean>;
+  onReady?: () => void;
 }) {
-  // on load the plan simply fades in (0.5 s); if the visitor already scrolled, the canvas fade
-  // is the whole intro and the model shows straight at the stage they scrolled to
-  const intro = useRef(progress.current > 0.02 ? 1 : 0);
+  const intro = useRef(0);
   const last = useRef(-1);
+  const warm = useRef(0);
+  const real = useRef(0);
   useFrame(({ gl, invalidate }, dt) => {
+    if (warm.current <= WARM.length) {
+      if (warm.current === 0) real.current = progress.current;
+      if (warm.current < WARM.length) {
+        progress.current = WARM[warm.current]!;
+        intro.current = 1;
+      } else {
+        // done: back to where the page really is, intro from the start, camera in place
+        progress.current = real.current;
+        intro.current = 0;
+        snap.current = false;
+        onReady?.();
+      }
+      warm.current++;
+      invalidate();
+    }
     if (intro.current < 1) {
       intro.current = Math.min(1, intro.current + Math.min(dt, 0.05) / 0.5);
       invalidate();
@@ -775,6 +807,7 @@ function Driver({
 }
 
 function HeroScene({ massing, labels, progress, active, onReady, onTime, kick }: HeroSceneProps) {
+  const snap = useRef(true);
   const stages = useRef<Stages>({
     draw: 0,
     main: 0,
@@ -792,7 +825,7 @@ function HeroScene({ massing, labels, progress, active, onReady, onTime, kick }:
     <Canvas
       className="hero-canvas"
       shadows
-      dpr={[1, 1.5]}
+      dpr={[1, 2]}
       frameloop={active ? "demand" : "never"}
       camera={{ fov: 30, near: 0.1, far: 300, position: [0.001, 30, 0.6] }}
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
@@ -803,17 +836,16 @@ function HeroScene({ massing, labels, progress, active, onReady, onTime, kick }:
         gl.toneMapping = THREE.NeutralToneMapping;
         gl.shadowMap.autoUpdate = false;
         gl.shadowMap.needsUpdate = true;
-        onReady?.();
       }}
       aria-hidden="true"
     >
-      <Driver progress={progress} stages={stages} />
+      <Driver progress={progress} stages={stages} snap={snap} onReady={onReady} />
       <hemisphereLight args={["#ffffff", "#dcdcd6", 1.4]} />
       <Sun stages={stages} onTime={onTime} />
       <Ground stages={stages} />
       <Site massing={massing} stages={stages} />
       <Building massing={massing} stages={stages} labels={labels} />
-      <Rig progress={progress} />
+      <Rig progress={progress} snap={snap} />
     </Canvas>
   );
 }
