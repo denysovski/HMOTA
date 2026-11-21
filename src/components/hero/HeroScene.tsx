@@ -18,6 +18,8 @@ export interface HeroSceneProps {
 }
 
 const SCALE = 0.1; // metres to scene units
+const WHITE = new THREE.Color("#ffffff");
+const BASE = new THREE.Color("#e2e2e0"); // white under a full ground shadow (ShadowMaterial 0.11)
 const LIME = new THREE.Color("#c8ff2e");
 const INK = new THREE.Color("#0a0a0a");
 const CLAY = new THREE.Color("#f4f3f0");
@@ -328,7 +330,7 @@ function Building({
     }
     const pg = new THREE.BufferGeometry();
     pg.setAttribute("position", new THREE.Float32BufferAttribute(planPts, 3));
-    return { pg, ghost, ghostMat, clayMat, labels, meshes };
+    return { pg, ghost, ghostMat, clayMat, capMat, labels, meshes };
   }, [b, cx, cz]);
   const contextPlanMat = useMemo(
     () => new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0.12 }),
@@ -342,6 +344,9 @@ function Building({
     // neighbours stay a faint ghost: a hint of the street, never competing with the building
     ctx.ghostMat.opacity = 0.1 * rise;
     ctx.clayMat.opacity = 0.16 * fill;
+    // the ground under a neighbour takes one even shade, the same tone as a ground shadow and
+    // fading in with the shadows: no white gap beside the house, no shadow lines across its plan
+    ctx.capMat.color.copy(WHITE).lerp(BASE, stages.current.shadow);
     for (const m of ctx.meshes) m.castShadow = fill > 0.4;
     for (const part of parts) {
       if (part.mesh) part.mesh.castShadow = fill > 0.5;
