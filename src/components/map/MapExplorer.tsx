@@ -272,21 +272,11 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
         )}
 
         <div className="map-legend label" aria-label="Legenda">
-          <span className="status-chip" data-status="realizace">
-            Realizováno
-          </span>
-          <span className="status-chip" data-status="vystavba">
-            Ve výstavbě
-          </span>
-          <span className="status-chip" data-status="soutez">
-            Soutěž
-          </span>
           <span className="legend-info">
             <button type="button" className="info-btn" aria-describedby="legend-tip">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <circle cx="12" cy="12" r="9.5" />
-                <path d="M12 11v6" strokeLinecap="round" />
-                <circle cx="12" cy="7.6" r="0.6" fill="currentColor" stroke="none" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6}>
+                <path d="M12 10.5v7" strokeLinecap="round" />
+                <circle cx="12" cy="6.6" r="1.6" fill="currentColor" stroke="none" />
               </svg>
               <span className="sr-only">Vysvětlivky</span>
             </button>
@@ -390,7 +380,11 @@ export function MapExplorer({ projects }: { projects: Project[] }) {
                           <dt>Plocha</dt>
                           <dd className="num">{area(p.areaM2)}</dd>
                         </dl>
-                        <Link href={`/projekty/${p.slug}`} className="u" tabIndex={open ? 0 : -1}>
+                        <Link
+                          href={`/projekty/${p.slug}`}
+                          className="arrow-link"
+                          tabIndex={open ? 0 : -1}
+                        >
                           Detail projektu <Arrow />
                         </Link>
                       </div>

@@ -4,7 +4,6 @@ import { Avatar } from "@/components/Avatar";
 import { site, team } from "@/lib/site";
 import { SocialScatter } from "@/components/SocialScatter";
 import { Hiring } from "@/components/Hiring";
-import { Deco } from "@/components/Deco";
 
 export const metadata: Metadata = {
   title: "Studio",
@@ -36,7 +35,7 @@ const approach = [
 
 export default function StudioPage() {
   return (
-    <div className="wrap" style={{ paddingBottom: "clamp(96px, 12vw, 200px)" }}>
+    <div className="wrap" style={{ paddingBottom: "clamp(40px, 4vw, 64px)" }}>
       <header className="page-head">
         <Reveal as="h1" className="mega" immediate>
           Studio
@@ -56,8 +55,7 @@ export default function StudioPage() {
           celé republice a ke každé zakázce přistupujeme jako k jedinečnému místu.
         </Reveal>
       </div>
-      <section className="section-tight has-deco">
-        <Deco kind="steps" className="deco-tr" />
+      <section className="section-tight">
         <table className="table">
           <caption className="label">Přístup</caption>
           <tbody>
@@ -72,7 +70,7 @@ export default function StudioPage() {
           </tbody>
         </table>
       </section>
-      <section className="section-tight" aria-labelledby="lide">
+      <section className="section-tight" style={{ paddingBottom: 0 }} aria-labelledby="lide">
         <div className="team-head">
           <h2 className="h2" id="lide">
             Lidé

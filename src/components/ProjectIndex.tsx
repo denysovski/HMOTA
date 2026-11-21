@@ -107,7 +107,7 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
           >
             Seznam
           </button>
-          <Link href={mapHref} className="u">
+          <Link href={mapHref} className="arrow-link">
             Mapa <Arrow />
           </Link>
         </div>

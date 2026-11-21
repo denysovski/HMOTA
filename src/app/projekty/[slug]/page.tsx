@@ -115,7 +115,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
                 title={`Poloha: ${p.municipality}`}
               />
               <p className="label" style={{ marginTop: 8 }}>
-                <Link href={`/mapa?projekt=${p.slug}`} className="u">
+                <Link href={`/mapa?projekt=${p.slug}`} className="arrow-link">
                   Ukázat na 3D mapě <Arrow />
                 </Link>
               </p>

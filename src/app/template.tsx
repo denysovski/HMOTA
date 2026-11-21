@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
-import { scrollToTop } from "@/lib/scroll";
+import { pinTop } from "@/lib/scroll";
 import { prefersReducedMotion } from "@/lib/motion";
 
 let firstLoad = true;
@@ -15,8 +15,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
       firstLoad = false;
       return;
     }
-    scrollToTop(true);
-    window.scrollTo(0, 0);
+    pinTop();
     const root = document.documentElement;
     if (prefersReducedMotion()) {
       delete root.dataset.leaving;

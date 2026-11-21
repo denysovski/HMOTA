@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Lenis from "lenis";
 import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/motion";
-import { scrollToTop, setLenis } from "@/lib/scroll";
+import { freezeScroll, scrollToTop, setLenis } from "@/lib/scroll";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -55,7 +55,10 @@ export function SmoothScroll() {
         return;
       }
       document.documentElement.dataset.leaving = "true";
-      window.setTimeout(() => router.push(target), 420);
+      // freeze the page where it is: no wheel momentum may carry on into the next page
+      freezeScroll();
+      // we place the new page at the top ourselves (see template.tsx), not the router
+      window.setTimeout(() => router.push(target, { scroll: false }), 420);
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);

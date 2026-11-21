@@ -10,7 +10,6 @@ import { Magnetic } from "@/components/Magnetic";
 import { featured, projects } from "@/content/projects";
 import { disciplines, recognition, site } from "@/lib/site";
 import { Arrow } from "@/components/Arrow";
-import { Deco } from "@/components/Deco";
 
 export default function Home() {
   const hero = featured[0] ?? projects[0]!;
@@ -32,8 +31,7 @@ export default function Home() {
         }
       />
 
-      <section className="wrap section has-deco" aria-labelledby="intro-title">
-        <Deco kind="arcs" className="deco-tr" />
+      <section className="wrap section" aria-labelledby="intro-title">
         <div className="intro-head">
           <Reveal as="h2" className="h2" id="intro-title">
             Klidná forma,
@@ -94,8 +92,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="wrap section has-deco" aria-label="Jak pracujeme">
-        <Deco kind="grid" className="deco-bl" />
+      <section className="wrap section" aria-label="Jak pracujeme">
         <div className="grid process">
           <div className="process-drawing">
             <Axo
@@ -151,7 +148,7 @@ export default function Home() {
         </div>
         <ScatterGrid items={featured} />
         <p style={{ textAlign: "center", marginTop: "clamp(64px, 8vw, 140px)" }}>
-          <Link href="/projekty" className="u">
+          <Link href="/projekty" className="arrow-link">
             Všechny projekty <Arrow />
           </Link>
         </p>
@@ -200,8 +197,7 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <section className="wrap section cta has-deco" aria-labelledby="cta">
-          <Deco kind="steps" className="deco-br" />
+        <section className="wrap section cta" aria-labelledby="cta">
           <h2 className="h2" id="cta">
             Máte pozemek,
             <br />
