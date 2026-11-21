@@ -477,8 +477,10 @@ html[data-leaving="true"] body::before {
   align-items: flex-start;
   padding: var(--pad);
   color: var(--ink);
+  background: var(--paper);
   pointer-events: none;
-  transition: color 400ms var(--ease-out);
+  /* a smooth slide: away on the way down, back on the way up */
+  transition: transform 520ms var(--ease-out);
   --nav-active: var(--ink); /* on white the current link is marked by a lime rule, not lime text */
 }
 .site-header[data-theme="dark"] {
@@ -497,6 +499,9 @@ html[data-leaving="true"] body::before {
 }
 .site-header > * {
   pointer-events: auto;
+}
+.site-header[data-hidden="true"] {
+  transform: translateY(-100%);
 }
 
 .wordmark {
@@ -578,8 +583,8 @@ html[data-leaving="true"] body::before {
   flex-direction: column;
   justify-content: space-between;
   padding: calc(var(--header-h) + 40px) var(--pad) calc(var(--pad) + 8px);
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
   overscroll-behavior: contain;
   touch-action: none;
   clip-path: inset(0 0 100% 0);
@@ -1591,28 +1596,28 @@ html[data-hero-loading="true"] body {
   }
 }
 
-/* filtering: results swap in, empty state rises in */
-.swap {
-  animation: swap-in 650ms var(--ease-out) both;
+/* filtering (after machacekdesign.cz): the current cards fade out and drop a little, the set
+   swaps after 260 ms, then the new cards fade in rising 14 px, 45 ms apart. Nothing grows. */
+.swap .fitem {
+  transition:
+    opacity 450ms var(--ease-out),
+    transform 600ms var(--ease-out);
 }
-.swap .plist li {
-  animation: swap-in 600ms var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * 35ms);
+.swap[data-phase="out"] .fitem {
+  opacity: 0;
+  transform: translateY(14px);
 }
-.empty {
-  animation: swap-in 800ms var(--ease-out) both;
+.swap[data-phase="in"] .fitem {
+  animation: filter-in 600ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
 }
 .empty .btn {
   margin-top: 24px;
 }
-@keyframes swap-in {
+@keyframes filter-in {
   from {
     opacity: 0;
-    transform: translateY(22px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
+    transform: translateY(14px);
   }
 }
 .count {
@@ -2669,4 +2674,9 @@ body:has(.map-page) .site-footer {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+@keyframes swap-in {
+  from {
+    opacity: 0;
+  }
 }

@@ -10,34 +10,29 @@ import { Arrow } from "@/components/Arrow";
 export function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [dark, setDark] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
-  // the header reads its colour from what is under it: dark over ink sections, light elsewhere
+  // the bar slides away while scrolling down and comes back on the way up (always at the top)
   useEffect(() => {
+    let last = window.scrollY;
     let raf = 0;
     const check = () => {
       raf = 0;
-      const y = 32;
-      const over = Array.from(document.querySelectorAll<HTMLElement>(".ink")).some((el) => {
-        const r = el.getBoundingClientRect();
-        return r.top <= y && r.bottom >= y;
-      });
-      setDark(over);
+      const y = window.scrollY;
+      if (y < 80) setHidden(false);
+      else if (y - last > 6) setHidden(true);
+      else if (last - y > 6) setHidden(false);
+      last = y;
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(check);
     };
-    check();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    const t = window.setTimeout(check, 400); // after a page transition settles
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      window.clearTimeout(t);
       cancelAnimationFrame(raf);
     };
-  }, [pathname]);
+  }, []);
   // while the next page loads, the clicked link already counts as current (one underline only)
   const [pending, setPending] = useState<string | null>(null);
   const here = pending ?? pathname;
@@ -63,7 +58,8 @@ export function Header() {
 
   return (
     <>
-      <header className="site-header" data-theme={dark || open ? "dark" : "light"}>
+      <header className="site-header" data-theme="light"
+        data-hidden={hidden && !open}>
         <Link href="/" className="wordmark">
           {site.wordmark.map((w) => (
             <span key={w}>{w}</span>

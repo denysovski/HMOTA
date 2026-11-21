@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import {
   STATUSES,
   TYPES,
@@ -13,6 +13,7 @@ import { ScatterGrid } from "./ScatterGrid";
 import { area, statusLabel, typeLabel, year } from "@/lib/format";
 import { Arrow } from "@/components/Arrow";
 import { ListPreview } from "./ListPreview";
+import { prefersReducedMotion } from "@/lib/motion";
 
 const EVENT = "hmota:query";
 
@@ -44,11 +45,26 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
   const status = params.get("stav") as ProjectStatus | null;
   const view = params.get("pohled") === "seznam" ? "seznam" : "mrizka";
 
+  // filtering: the shown cards fade out, the set swaps, the new cards rise in one by one
+  const [phase, setPhase] = useState<"in" | "out">("in");
+  const swap = useRef<number | undefined>(undefined);
+  const change = (next: URLSearchParams) => {
+    window.clearTimeout(swap.current);
+    if (prefersReducedMotion()) {
+      setQuery(next);
+      return;
+    }
+    setPhase("out");
+    swap.current = window.setTimeout(() => {
+      setQuery(next);
+      setPhase("in");
+    }, 260);
+  };
   const setParam = (key: string, value: string | null) => {
     const next = new URLSearchParams(params.toString());
     if (value) next.set(key, value);
     else next.delete(key);
-    setQuery(next);
+    change(next);
   };
 
   const list = projects.filter(
@@ -119,24 +135,24 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
       >
         Zobrazeno {list.length} z {projects.length}
       </p>
-      <div key={`${type}-${status}-${view}`} className="swap">
+      <div className="swap" data-phase={phase}>
         {list.length === 0 ? (
-          <div className="empty" style={{ paddingBottom: "20vh" }}>
+          <div className="empty fitem" style={{ paddingBottom: "20vh" }}>
             <p className="statement">Tomuto výběru neodpovídá žádný projekt.</p>
             <button
               type="button"
               className="btn btn-ghost"
-              onClick={() => setQuery(new URLSearchParams())}
+              onClick={() => change(new URLSearchParams())}
             >
               Zrušit filtry
             </button>
           </div>
         ) : view === "mrizka" ? (
-          <ScatterGrid items={list} />
+          <ScatterGrid items={list} reveal={false} />
         ) : (
           <ul className="plist" onMouseLeave={() => setHover(null)}>
             {list.map((p, i) => (
-              <li key={p.slug} style={{ ["--i" as string]: i }}>
+              <li key={p.slug} className="fitem" style={{ ["--i" as string]: i }}>
                 <Link href={`/projekty/${p.slug}`} onMouseEnter={() => setHover(p.slug)}>
                   <span className="name">{p.name}</span>
                   <span>{p.municipality}</span>

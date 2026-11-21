@@ -17,12 +17,16 @@ const SLOTS = [
   { col: "6 / span 6", mt: 8, aspect: 16 / 10 },
 ];
 
-export function ScatterGrid({ items }: { items: Project[] }) {
+/**
+ * reveal: the scroll-in clip reveal (home page). Off where the grid is filtered: there the
+ * cards only fade and rise (see .swap in globals.css), they never "grow".
+ */
+export function ScatterGrid({ items, reveal = true }: { items: Project[]; reveal?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
-      if (prefersReducedMotion()) return;
+      if (prefersReducedMotion() || !reveal) return;
       const medias = gsap.utils.toArray<HTMLElement>(".scatter-media", ref.current);
       medias.forEach((m) => {
         gsap.fromTo(
@@ -55,8 +59,8 @@ export function ScatterGrid({ items }: { items: Project[] }) {
           <Link
             key={p.slug}
             href={`/projekty/${p.slug}`}
-            className="scatter-item"
-            style={{ gridColumn: s.col, marginTop: `${s.mt}vw` }}
+            className="scatter-item fitem"
+            style={{ gridColumn: s.col, marginTop: `${s.mt}vw`, ["--i" as string]: i }}
           >
             <div className="scatter-media" style={{ aspectRatio: s.aspect }}>
               <Axo massing={p.massing} aspect={s.aspect} title={`Axonometrie: ${p.name}`} />
