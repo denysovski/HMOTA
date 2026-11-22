@@ -500,9 +500,9 @@ html[data-leaving="true"] body::before {
   background-size: 100% 2px;
   background-position: 0 100%;
 }
-.site-nav ul:has(a:hover) a[aria-current="page"]:not(:hover) {
-  background-size: 0 2px;
-  background-position: 100% 100%;
+/* hovering another link: the current page keeps its lime line, the hovered one gets a black line */
+.site-nav a:not([aria-current="page"]) {
+  background-image: linear-gradient(var(--ink), var(--ink));
 }
 .site-header > * {
   pointer-events: auto;
@@ -1057,7 +1057,7 @@ html[data-hero-loading="true"] body {
 .hero-hint {
   position: absolute;
   left: 50%;
-  top: calc(var(--header-h) + 18px);
+  top: calc(var(--header-h) - 32px); /* level with the transparent bar, between logo and links */
   z-index: 2;
   transform: translateX(-50%);
   text-align: center;
@@ -2518,6 +2518,7 @@ html[data-hero-loading="true"] body {
     bottom: calc(var(--pad) + clamp(40px, 5.8vw, 108px) * 2.9 + 16px);
   }
   .hero-hint {
+    top: calc(var(--header-h) + 18px); /* phones: below the logo and menu button */
     width: calc(100% - 2 * var(--pad));
   }
   .hero-ring {
@@ -2831,4 +2832,13 @@ body:has(.map-page) .site-footer {
 }
 .ink .footer-legal > span:not(.demo-info) {
   opacity: 0.68;
+}
+.site-nav a:not([aria-current="page"]):hover {
+  background-size: 100% 2px;
+}
+/* narrower screens: the intro line goes back under the bar, clear of the links */
+@media (max-width: 1099px) {
+  .hero-hint {
+    top: calc(var(--header-h) + 18px);
+  }
 }
