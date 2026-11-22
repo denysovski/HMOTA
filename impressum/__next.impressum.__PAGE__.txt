@@ -1,0 +1,27 @@
+2:"$Sreact.fragment"
+3:"/HMOTA/_next/static/chunks/3qfy96eoyh-ek.js"
+4:"/HMOTA/_next/static/chunks/0kjpniz56qgv5.js"
+5:"/HMOTA/_next/static/chunks/0_u0-yqyr2qw5.js"
+6:I[39756,["$3","$4","$5"],"default"]
+7:I[37457,["$3","$4","$5"],"default"]
+c:I[97367,["$3","$4","$5"],"OutletBoundary"]
+d:"$Sreact.suspense"
+10:"ViewportBoundary"
+11:I[97367,["$3","$4","$5"],"$10"]
+12:"MetadataBoundary"
+13:I[97367,["$3","$4","$5"],"$12"]
+14:I[27201,["$3","$4","$5"],"IconMark"]
+9:X
+9:C
+a:X
+b:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$2","c",{"children":[["$","div",null,{"className":"wrap","style":{"paddingBottom":"clamp(96px, 12vw, 200px)"},"children":[["$","header",null,{"className":"page-head","children":["$","h1",null,{"className":"h2","children":"Impressum"}]}],["$","div",null,{"className":"prose","children":[["$","p",null,{"className":"footer-demo","style":{"borderTop":0,"paddingTop":0},"children":[["$","span",null,{"className":"footer-demo-dot","aria-hidden":"true"}],"Demo stránka. Ateliér, lidé, projekty a kontaktní údaje jsou smyšlené a nejde o pravdivé informace."]}],["$","h2",null,{"children":"Provozovatel"}],["$","p",null,{"children":["HMOTA architekti s.r.o.",["$","br",null,{}],"Komunardů 1078/34, 170 00 Praha 7 – Holešovice, Česká republika",["$","br",null,{}],"IČO ","08415279"," · DIČ ","CZ08415279",["$","br",null,{}],"Spisová značka C 318204 vedená u Městského soudu v Praze"]}],["$","h2",null,{"children":"Kontakt"}],["$","p",null,{"children":["E-mail: ","studio@hmota.example",["$","br",null,{}],"Telefon: ","+420 123 456 789"]}],["$","h2",null,{"children":"Autorizace"}],["$","p",null,{"children":["Ing. arch. Jan Husták, autorizovaný architekt ČKA 03 912",". Ateliér je členem České komory architektů a řídí se jejím profesním a etickým řádem."]}],["$","h2",null,{"children":"Pojištění"}],["$","p",null,{"children":"Profesní pojištění odpovědnosti architekta s limitem plnění 20 mil. Kč."}],["$","h2",null,{"children":"Autorská práva"}],["$","p",null,{"children":"Texty, výkresy a vizualizace na tomto webu jsou autorským dílem ateliéru. Bez písemného souhlasu je nelze dále šířit."}],["$","h2",null,{"children":"Podklady"}],["$","p",null,{"children":"Mapové podklady: Natural Earth (public domain). Reliéf na 3D mapě je stylizovaný, nejde o měřená výšková data. Písma Instrument Sans, Hedvig Letters Serif a Geist jsou licencovaná pod SIL Open Font License."}]]}]]}],null,["$","$Lc",null,{"children":["$","$d",null,{"name":"Next.MetadataOutlet","children":"$@e"}]}]]}],"p":"$@f","v":null,"s":"$a"}}]]
+1:[["children",{"s":"impressum","h":64,"d":{"r":["$","$2","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","template":["$","$L7",null,{}]}]]}],"p":"$@8","v":"$9","s":"$a"},"c":"$Qb"}]]
+0:{"t":{"t":{"s":"","h":16,"c":"$Q1"},"h":{"r":["$","$2","h",{"children":[null,["$","$L11",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#ffffff"}]]}],["$","$L13",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$d",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Impressum · Hmota"}],["$","meta","1",{"name":"description","content":"Architektonický ateliér z pražských Holešovic. Od roku 2009 navrhujeme domy, veřejné stavby, interiéry a krajinu po celé České republice."}],["$","link","2",{"rel":"canonical","href":"https://denysovski.github.io/HMOTA/impressum/"}],["$","meta","3",{"property":"og:title","content":"Impressum · Hmota"}],["$","meta","4",{"property":"og:description","content":"Architektonický ateliér z pražských Holešovic. Od roku 2009 navrhujeme domy, veřejné stavby, interiéry a krajinu po celé České republice."}],["$","meta","5",{"property":"og:site_name","content":"Hmota"}],["$","meta","6",{"property":"og:locale","content":"cs_CZ"}],["$","meta","7",{"property":"og:type","content":"website"}],["$","meta","8",{"name":"twitter:card","content":"summary"}],["$","meta","9",{"name":"twitter:title","content":"Impressum · Hmota"}],["$","meta","10",{"name":"twitter:description","content":"Architektonický ateliér z pražských Holešovic. Od roku 2009 navrhujeme domy, veřejné stavby, interiéry a krajinu po celé České republice."}],["$","link","11",{"rel":"icon","href":"/HMOTA/icon.svg?icon.1novf6tcb61zg.svg","sizes":"any","type":"image/svg+xml"}],["$","$L14","12",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@15","v":null,"s":"$a"}},"a":"$@16","u":"$@17","b":"0qdI13ygirOMXImisVMOy"}
+e:null
+17:true
+a:300
+a:C
+16:0
+8:"$undefined"
+15:"$undefined"
+f:"$undefined"

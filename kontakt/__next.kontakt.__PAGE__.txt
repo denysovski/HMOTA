@@ -1,0 +1,30 @@
+2:"$Sreact.fragment"
+3:"/HMOTA/_next/static/chunks/3qfy96eoyh-ek.js"
+4:"/HMOTA/_next/static/chunks/0kjpniz56qgv5.js"
+5:"/HMOTA/_next/static/chunks/0_u0-yqyr2qw5.js"
+6:I[39756,["$3","$4","$5"],"default"]
+7:I[37457,["$3","$4","$5"],"default"]
+c:"/HMOTA/_next/static/chunks/0pl_s2po9qua2.js"
+d:I[96199,["$3","$4","$5","$c"],"Reveal"]
+e:I[65254,["$3","$4","$5","$c"],"ContactForm"]
+f:I[97367,["$3","$4","$5"],"OutletBoundary"]
+10:"$Sreact.suspense"
+13:"ViewportBoundary"
+14:I[97367,["$3","$4","$5"],"$13"]
+15:"MetadataBoundary"
+16:I[97367,["$3","$4","$5"],"$15"]
+17:I[27201,["$3","$4","$5"],"IconMark"]
+9:X
+9:C
+a:X
+b:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$2","c",{"children":[["$","div",null,{"className":"wrap","style":{"paddingBottom":"clamp(96px, 12vw, 200px)"},"children":[["$","header",null,{"className":"page-head","children":["$","$Ld",null,{"as":"h1","className":"mega","immediate":true,"children":"Začít projekt"}]}],["$","div",null,{"className":"grid","style":{"rowGap":56},"children":[["$","div",null,{"className":"small contact-details","children":[["$","p",null,{"className":"label","children":"E-mail"}],["$","p",null,{"style":{"marginBottom":18},"children":["$","a",null,{"className":"u","href":"mailto:studio@hmota.example","children":"studio@hmota.example"}]}],["$","p",null,{"className":"label","children":"Telefon"}],["$","p",null,{"style":{"marginBottom":18},"children":["$","span",null,{"className":"num","children":"+420 123 456 789"}]}],["$","p",null,{"className":"label","children":"Ateliér"}],["$","address",null,{"style":{"fontStyle":"normal","marginBottom":18},"children":[["$","span","Komunardů 1078/34",{"style":{"display":"block"},"children":"Komunardů 1078/34"}],["$","span","170 00 Praha 7 – Holešovice",{"style":{"display":"block"},"children":"170 00 Praha 7 – Holešovice"}],["$","span","Česká republika",{"style":{"display":"block"},"children":"Česká republika"}]]}],["$","p",null,{"className":"label","children":"Odpovídáme"}],["$","p",null,{"children":"Do dvou pracovních dnů"}]]}],["$","div",null,{"className":"contact-form","children":["$","$Le",null,{}]}]]}]]}],[["$","script","script-0",{"src":"/HMOTA/_next/static/chunks/0pl_s2po9qua2.js","async":true}]],["$","$Lf",null,{"children":["$","$10",null,{"name":"Next.MetadataOutlet","children":"$@11"}]}]]}],"p":"$@12","v":null,"s":"$a"}}]]
+1:[["children",{"s":"kontakt","h":64,"d":{"r":["$","$2","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","template":["$","$L7",null,{}]}]]}],"p":"$@8","v":"$9","s":"$a"},"c":"$Qb"}]]
+0:{"t":{"t":{"s":"","h":16,"c":"$Q1"},"h":{"r":["$","$2","h",{"children":[null,["$","$L14",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#ffffff"}]]}],["$","$L16",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$10",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Kontakt · Hmota"}],["$","meta","1",{"name":"description","content":"Začněte s námi projekt. Odpovídáme do dvou pracovních dnů."}],["$","link","2",{"rel":"canonical","href":"https://denysovski.github.io/HMOTA/kontakt/"}],["$","meta","3",{"property":"og:title","content":"Kontakt · Hmota"}],["$","meta","4",{"property":"og:description","content":"Začněte s námi projekt. Odpovídáme do dvou pracovních dnů."}],["$","meta","5",{"property":"og:site_name","content":"Hmota"}],["$","meta","6",{"property":"og:locale","content":"cs_CZ"}],["$","meta","7",{"property":"og:type","content":"website"}],["$","meta","8",{"name":"twitter:card","content":"summary"}],["$","meta","9",{"name":"twitter:title","content":"Kontakt · Hmota"}],["$","meta","10",{"name":"twitter:description","content":"Začněte s námi projekt. Odpovídáme do dvou pracovních dnů."}],["$","link","11",{"rel":"icon","href":"/HMOTA/icon.svg?icon.1novf6tcb61zg.svg","sizes":"any","type":"image/svg+xml"}],["$","$L17","12",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@18","v":null,"s":"$a"}},"a":"$@19","u":"$@1a","b":"0qdI13ygirOMXImisVMOy"}
+11:null
+1a:true
+a:300
+a:C
+19:0
+8:"$undefined"
+18:"$undefined"
+12:"$undefined"

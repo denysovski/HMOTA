@@ -1,0 +1,4 @@
+:HL["/HMOTA/_next/static/chunks/02xvneq-ggpvu.css","style"]
+:HC["/",""]
+1:[["children",{"s":"__PAGE__","h":128}]]
+0:{"b":"0qdI13ygirOMXImisVMOy","t":{"t":{"s":"","h":16,"c":"$Q1"}}}

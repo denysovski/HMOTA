@@ -1,0 +1,27 @@
+2:"$Sreact.fragment"
+3:"/HMOTA/_next/static/chunks/3qfy96eoyh-ek.js"
+4:"/HMOTA/_next/static/chunks/0kjpniz56qgv5.js"
+5:"/HMOTA/_next/static/chunks/0_u0-yqyr2qw5.js"
+6:I[39756,["$3","$4","$5"],"default"]
+7:I[37457,["$3","$4","$5"],"default"]
+c:I[97367,["$3","$4","$5"],"OutletBoundary"]
+d:"$Sreact.suspense"
+10:"ViewportBoundary"
+11:I[97367,["$3","$4","$5"],"$10"]
+12:"MetadataBoundary"
+13:I[97367,["$3","$4","$5"],"$12"]
+14:I[27201,["$3","$4","$5"],"IconMark"]
+9:X
+9:C
+a:X
+b:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$2","c",{"children":[["$","div",null,{"className":"wrap","style":{"paddingBottom":"clamp(96px, 12vw, 200px)"},"children":[["$","header",null,{"className":"page-head","children":["$","h1",null,{"className":"h2","children":"Ochrana soukromí"}]}],["$","div",null,{"className":"prose","children":[["$","p",null,{"className":"label","children":"Návrh textu. Před spuštěním nechte zkontrolovat právníkem."}],["$","h2",null,{"children":"Správce údajů"}],["$","p",null,{"children":["Hmota",", IČO ","08415279",", ","Komunardů 1078/34, 170 00 Praha 7 – Holešovice, Česká republika",". Kontakt: ","studio@hmota.example","."]}],["$","h2",null,{"children":"Jaké údaje zpracováváme"}],["$","p",null,{"children":"Údaje z poptávkového formuláře (jméno, e-mail, telefon a popis projektu) použijeme jen k odpovědi na vaši poptávku a k přípravě nabídky. Uchováváme je nejdéle 3 roky."}],["$","h2",null,{"children":"Cookies a měření"}],["$","p",null,{"children":"Web nepoužívá reklamní ani analytické cookies. Pokud se to změní, vyžádáme si váš souhlas."}],["$","h2",null,{"children":"Vaše práva"}],["$","p",null,{"children":"Máte právo na přístup, opravu, výmaz a omezení zpracování a právo podat stížnost u Úřadu pro ochranu osobních údajů (uoou.gov.cz)."}]]}]]}],null,["$","$Lc",null,{"children":["$","$d",null,{"name":"Next.MetadataOutlet","children":"$@e"}]}]]}],"p":"$@f","v":null,"s":"$a"}}]]
+1:[["children",{"s":"ochrana-soukromi","h":64,"d":{"r":["$","$2","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","template":["$","$L7",null,{}]}]]}],"p":"$@8","v":"$9","s":"$a"},"c":"$Qb"}]]
+0:{"t":{"t":{"s":"","h":16,"c":"$Q1"},"h":{"r":["$","$2","h",{"children":[null,["$","$L11",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#ffffff"}]]}],["$","$L13",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$d",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Ochrana soukromí · Hmota"}],["$","meta","1",{"name":"description","content":"Architektonický ateliér z pražských Holešovic. Od roku 2009 navrhujeme domy, veřejné stavby, interiéry a krajinu po celé České republice."}],["$","link","2",{"rel":"canonical","href":"https://denysovski.github.io/HMOTA/ochrana-soukromi/"}],["$","meta","3",{"property":"og:title","content":"Ochrana soukromí · Hmota"}],["$","meta","4",{"property":"og:description","content":"Architektonický ateliér z pražských Holešovic. Od roku 2009 navrhujeme domy, veřejné stavby, interiéry a krajinu po celé České republice."}],["$","meta","5",{"property":"og:site_name","content":"Hmota"}],["$","meta","6",{"property":"og:locale","content":"cs_CZ"}],["$","meta","7",{"property":"og:type","content":"website"}],["$","meta","8",{"name":"twitter:card","content":"summary"}],["$","meta","9",{"name":"twitter:title","content":"Ochrana soukromí · Hmota"}],["$","meta","10",{"name":"twitter:description","content":"Architektonický ateliér z pražských Holešovic. Od roku 2009 navrhujeme domy, veřejné stavby, interiéry a krajinu po celé České republice."}],["$","link","11",{"rel":"icon","href":"/HMOTA/icon.svg?icon.1novf6tcb61zg.svg","sizes":"any","type":"image/svg+xml"}],["$","$L14","12",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@15","v":null,"s":"$a"}},"a":"$@16","u":"$@17","b":"0qdI13ygirOMXImisVMOy"}
+e:null
+17:true
+a:300
+a:C
+16:0
+8:"$undefined"
+15:"$undefined"
+f:"$undefined"
