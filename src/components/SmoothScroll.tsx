@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Lenis from "lenis";
 import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/motion";
-import { freezeScroll, scrollToTop, setLenis } from "@/lib/scroll";
+import { freezeScroll, pinTop, scrollToTop, setLenis } from "@/lib/scroll";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -30,6 +31,32 @@ export function SmoothScroll() {
       setLenis(null);
     };
   }, []);
+
+  // every arrival on a new page (any pathname change, also within /projekty): start at the very
+  // top before the first paint, then lift the veil and let the page rise in
+  const pathname = usePathname();
+  const first = useRef(true);
+  useLayoutEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    pinTop();
+    const root = document.documentElement;
+    if (prefersReducedMotion()) {
+      delete root.dataset.leaving;
+      return;
+    }
+    const t = window.setTimeout(() => delete root.dataset.leaving, 120);
+    document.querySelector<HTMLElement>(".page")?.animate(
+      [
+        { opacity: 0, transform: "translateY(32px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 900, delay: 120, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "backwards" },
+    );
+    return () => window.clearTimeout(t);
+  }, [pathname]);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -57,7 +84,7 @@ export function SmoothScroll() {
       document.documentElement.dataset.leaving = "true";
       // freeze the page where it is: no wheel momentum may carry on into the next page
       freezeScroll();
-      // we place the new page at the top ourselves (see template.tsx), not the router
+      // we place the new page at the top ourselves (the pathname effect above), not the router
       window.setTimeout(() => router.push(target, { scroll: false }), 420);
     };
     document.addEventListener("click", onClick);
