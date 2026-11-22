@@ -478,9 +478,16 @@ html[data-leaving="true"] body::before {
   padding: var(--pad);
   color: var(--ink);
   background: var(--paper);
+  /* a soft edge so the bar reads as a bar over the content */
+  box-shadow:
+    0 1px 0 rgb(10 10 10 / 0.05),
+    0 8px 24px -14px rgb(10 10 10 / 0.22);
   pointer-events: none;
   /* a smooth slide: away on the way down, back on the way up */
-  transition: transform 520ms var(--ease-out);
+  transition:
+    transform 520ms var(--ease-out),
+    background-color 400ms var(--ease-out),
+    box-shadow 400ms var(--ease-out);
   --nav-active: var(--ink); /* on white the current link is marked by a lime rule, not lime text */
 }
 .site-header[data-theme="dark"] {
@@ -502,6 +509,17 @@ html[data-leaving="true"] body::before {
 }
 .site-header[data-hidden="true"] {
   transform: translateY(-100%);
+}
+/* home, while the intro line is on screen: the bar floats on the scene with no backdrop */
+html[data-hero-intro="true"] .site-header:not([data-hidden="true"]) {
+  background: transparent;
+  box-shadow: none;
+}
+/* phones: the bar always stays */
+@media (max-width: 767px) {
+  .site-header[data-hidden="true"] {
+    transform: none;
+  }
 }
 
 .wordmark {
@@ -1602,23 +1620,20 @@ html[data-hero-loading="true"] body {
   transition:
     opacity 450ms var(--ease-out),
     transform 600ms var(--ease-out);
+  transition-delay: calc(min(var(--i, 0), 8) * 45ms);
 }
 .swap[data-phase="out"] .fitem {
   opacity: 0;
   transform: translateY(14px);
+  transition-delay: 0s;
 }
-.swap[data-phase="in"] .fitem {
-  animation: filter-in 600ms var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * 45ms);
+.swap[data-phase="pre"] .fitem {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: none;
 }
 .empty .btn {
   margin-top: 24px;
-}
-@keyframes filter-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
 }
 .count {
   transition: opacity 300ms;
@@ -1712,9 +1727,9 @@ html[data-hero-loading="true"] body {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  color: var(--lime);
-  background: var(--paper);
-  border: 1px solid var(--line);
+  color: var(--ink);
+  background: var(--lime);
+  border: 0;
   cursor: default;
   transition:
     background-color 240ms var(--ease-out),
@@ -1727,9 +1742,7 @@ html[data-hero-loading="true"] body {
 }
 .info-btn:hover,
 .info-btn:focus-visible {
-  color: var(--ink);
-  background: var(--lime);
-  border-color: var(--lime);
+  background: #b6ea1a; /* a touch darker lime */
 }
 .legend-tip {
   position: absolute;
@@ -2634,9 +2647,9 @@ body:has(.map-page) .site-footer {
 /* open position: text and a large drawn envelope */
 .hiring {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
   align-items: center;
-  gap: clamp(32px, 5vw, 96px);
+  gap: clamp(16px, 2.5vw, 40px);
   margin-top: clamp(96px, 12vw, 200px);
   padding: clamp(32px, 5vw, 72px);
   border-radius: 24px;
@@ -2649,8 +2662,10 @@ body:has(.map-page) .site-footer {
   max-width: 46ch;
 }
 .hiring-art {
-  width: 100%;
+  width: 112%;
+  max-width: none;
   height: auto;
+  margin-left: -4%;
   overflow: visible;
 }
 .hiring-letter {
@@ -2665,7 +2680,9 @@ body:has(.map-page) .site-footer {
   }
   .hiring-art {
     order: -1;
+    width: 100%;
     max-width: 320px;
+    margin-left: 0;
     justify-self: center;
   }
 }
@@ -2678,5 +2695,58 @@ body:has(.map-page) .site-footer {
 @keyframes swap-in {
   from {
     opacity: 0;
+  }
+}
+
+/* phones: more air inside the home sections (the section rhythm itself stays) */
+@media (max-width: 767px) {
+  .intro-services {
+    row-gap: 20px;
+    margin-top: 40px;
+  }
+  .intro-services p {
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .titleblock {
+    row-gap: 56px;
+  }
+  .titleblock > div {
+    grid-column: 1 / -1 !important;
+  }
+  .titleblock dl {
+    row-gap: 14px;
+  }
+  .titleblock dt,
+  .titleblock dd {
+    font-size: 15px;
+  }
+  /* awards: title on its own line, project and year under it */
+  .table tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 16px;
+    padding-block: 16px;
+  }
+  .table th {
+    grid-column: 1 / -1;
+    font-size: 15px;
+  }
+  .table th,
+  .table td {
+    padding: 0;
+    border: 0;
+  }
+  .table tr {
+    border-top: 1px solid var(--rule);
+  }
+  .table tr:last-child {
+    border-bottom: 1px solid var(--rule);
+  }
+  .process {
+    row-gap: 72px;
+  }
+  .process-drawing + * {
+    margin-top: 8px;
   }
 }

@@ -46,7 +46,10 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
   const view = params.get("pohled") === "seznam" ? "seznam" : "mrizka";
 
   // filtering: the shown cards fade out, the set swaps, the new cards rise in one by one
-  const [phase, setPhase] = useState<"in" | "out">("in");
+  // out: the shown cards fade and drop; pre: the new set is placed, hidden, with no transition;
+  // in: it fades and rises, one card after another. Plain transitions only: an animation that
+  // is removed mid-way would make the fade-out jump instead of play.
+  const [phase, setPhase] = useState<"in" | "out" | "pre">("in");
   const swap = useRef<number | undefined>(undefined);
   const change = (next: URLSearchParams) => {
     window.clearTimeout(swap.current);
@@ -57,7 +60,8 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
     setPhase("out");
     swap.current = window.setTimeout(() => {
       setQuery(next);
-      setPhase("in");
+      setPhase("pre");
+      requestAnimationFrame(() => requestAnimationFrame(() => setPhase("in")));
     }, 260);
   };
   const setParam = (key: string, value: string | null) => {

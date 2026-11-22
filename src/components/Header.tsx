@@ -58,8 +58,7 @@ export function Header() {
 
   return (
     <>
-      <header className="site-header" data-theme="light"
-        data-hidden={hidden && !open}>
+      <header className="site-header" data-theme="light" data-hidden={hidden && !open}>
         <Link href="/" className="wordmark">
           {site.wordmark.map((w) => (
             <span key={w}>{w}</span>
