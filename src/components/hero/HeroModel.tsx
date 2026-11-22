@@ -195,7 +195,7 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
           // until the 3D is loaded and has played every stage once behind it, a short loader
           // holds the page: when it lifts, the animation is ready and scrolls without a hitch
           <div className="hero-loader" data-done={ready} aria-hidden={ready}>
-            <svg className="hero-loader-flower" viewBox="0 0 100 100" width="76" height="76">
+            <svg className="hero-loader-flower" viewBox="6.4 10.4 87.2 79.2">
               {PETALS.map(([x, y], i) => (
                 <g key={i} style={{ ["--i" as string]: i }}>
                   <circle className="petal-fill" cx={x} cy={y} r="10.5" />

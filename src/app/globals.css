@@ -773,6 +773,8 @@ html[data-hero-loading="true"] body {
 }
 .hero-loader-flower {
   overflow: visible;
+  width: 76px;
+  height: auto;
 }
 .hero-loader-flower .petal-line {
   fill: none;
@@ -786,6 +788,17 @@ html[data-hero-loading="true"] body {
   transform: scale(0);
   animation: petal 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   animation-delay: calc(var(--i) * 160ms);
+}
+@media (min-width: 1100px) {
+  .hero-loader-flower {
+    width: min(800px, 80vw, 96vh);
+  }
+  .hero-loader-flower .petal-line {
+    stroke-width: 1.6;
+  }
+  .hero-loader-flower .petal-fill {
+    r: 11.3px;
+  }
 }
 @keyframes petal {
   0% { transform: scale(0); }
