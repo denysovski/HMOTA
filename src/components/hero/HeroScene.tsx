@@ -303,6 +303,7 @@ function Building({
       transparent: true,
       opacity: 0,
     });
+    clayMat.shadowSide = THREE.DoubleSide;
     // a sunlit wall is never brighter than the shade on the ground: seen through a ghost, a
     // shadow stays a shadow instead of turning into a white patch
     clayMat.onBeforeCompile = (sh) => {
@@ -825,6 +826,7 @@ function Driver({
   const last = useRef(-1);
   const warm = useRef(0);
   const real = useRef(0);
+  const settle = useRef(0);
   useFrame(({ gl, invalidate }, dt) => {
     if (warm.current <= WARM.length) {
       if (warm.current === 0) real.current = progress.current;
@@ -845,10 +847,18 @@ function Driver({
       intro.current = Math.min(1, intro.current + Math.min(dt, 0.05) / 0.5);
       invalidate();
     }
-    // the shadow map is the heaviest pass: redraw it only when the model or the sun changed
+    // the shadow map is the heaviest pass: redraw it only while the model or the sun is changing.
+    // The trees, the people and the volumes update in their own frame callbacks, some a frame
+    // behind this one, so keep redrawing for a short while after the last change: otherwise the
+    // map freezes one step early and the shadows come loose from the houses
     const key = progress.current + intro.current;
-    gl.shadowMap.needsUpdate = key !== last.current;
+    if (key !== last.current) settle.current = 24;
     last.current = key;
+    gl.shadowMap.needsUpdate = settle.current > 0;
+    if (settle.current > 0) {
+      settle.current--;
+      invalidate();
+    }
     const p = progress.current;
     const t = intro.current;
     const scrolled = range(p, 0.02, 0.2);
