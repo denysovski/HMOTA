@@ -71,6 +71,11 @@ const MATERIAL_NOTE =
   "Brutalismus · pohledový beton z prkenného bednění, hrubý kartáčovaný beton, černá ocel, čiré sklo";
 
 /** The scroll-built building: plan, section, massing, material, light. Pinned with CSS sticky. */
+/* Loader "flower": six circles around one, filled one after another. */
+const PETALS: [number, number][] = [
+  [35, 24], [65, 24], [80, 50], [65, 76], [35, 76], [20, 50], [50, 50],
+];
+
 export function HeroModel({ massing, poster, title, projectName }: Props) {
   const root = useRef<HTMLElement>(null);
   const ring = useRef<SVGCircleElement>(null);
@@ -190,7 +195,14 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
           // until the 3D is loaded and has played every stage once behind it, a short loader
           // holds the page: when it lifts, the animation is ready and scrolls without a hitch
           <div className="hero-loader" data-done={ready} aria-hidden={ready}>
-            <span className="hero-loader-ring" />
+            <svg className="hero-loader-flower" viewBox="0 0 100 100" width="76" height="76">
+              {PETALS.map(([x, y], i) => (
+                <g key={i} style={{ ["--i" as string]: i }}>
+                  <circle className="petal-fill" cx={x} cy={y} r="10.5" />
+                  <circle className="petal-line" cx={x} cy={y} r="12" />
+                </g>
+              ))}
+            </svg>
             <span className="sr-only">Načítání</span>
           </div>
         )}
