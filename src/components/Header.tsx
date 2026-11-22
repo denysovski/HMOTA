@@ -14,7 +14,12 @@ export function Header() {
 
   // the bar slides away while scrolling down and comes back on the way up (always at the top)
   useEffect(() => {
+    // Lenis eases every wheel tick into many small per-frame steps, so a slow scroll never
+    // moves more than a few pixels between two checks. Measure the distance travelled since the
+    // direction last changed instead of the step between frames.
     let last = window.scrollY;
+    let anchor = last;
+    let dir = 0;
     let raf = 0;
     const root = document.documentElement;
     const check = () => {
@@ -25,10 +30,15 @@ export function Header() {
       const overHero = !!hero && y < hero.offsetTop + hero.offsetHeight - 80;
       if (overHero) root.dataset.heroIntro = "true";
       else delete root.dataset.heroIntro;
-      if (y < 80 || overHero) setHidden(false);
-      else if (y - last > 6) setHidden(true);
-      else if (last - y > 6) setHidden(false);
+      const d = Math.sign(y - last);
+      if (d !== 0 && d !== dir) {
+        dir = d;
+        anchor = last;
+      }
       last = y;
+      if (y < 80 || overHero) setHidden(false);
+      else if (dir > 0 && y - anchor > 24) setHidden(true);
+      else if (dir < 0 && anchor - y > 12) setHidden(false);
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(check);
