@@ -1951,7 +1951,7 @@ html[data-hero-loading="true"] body {
 .map-card-pos[data-docked="true"] {
   left: auto;
   right: var(--pad);
-  top: calc(var(--header-h) + 8px);
+  top: calc(var(--header-h) + 52px); /* clear of the white bar and its shadow */
   transform: none !important;
 }
 .map-card {
@@ -2608,6 +2608,11 @@ body {
   overflow-x: clip;
 }
 
+/* map: the bar sits flush on the map, no shadow */
+body:has(.map-page) .site-header {
+  box-shadow: none;
+}
+
 /* the map is a single full-screen view: no footer, only the side list scrolls (desktop) */
 body:has(.map-page) .site-footer {
   display: none;
@@ -2749,4 +2754,81 @@ body:has(.map-page) .site-footer {
   .process-drawing + * {
     margin-top: 8px;
   }
+}
+
+/* footer: the demo note in a bubble over a small lime "i" */
+.demo-info {
+  position: relative;
+  z-index: 3; /* above the big footer wordmark */
+  display: inline-flex;
+  align-items: center;
+}
+.demo-info-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--ink);
+  cursor: default;
+  transition: background-color 240ms var(--ease-out);
+}
+.demo-info-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.demo-info-btn:hover,
+.demo-info-btn:focus-visible {
+  background: #b6ea1a;
+}
+.demo-tip {
+  position: absolute;
+  left: -4px;
+  bottom: calc(100% + 12px);
+  z-index: 5;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 2 * var(--pad)));
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0a0a0a;
+  font-size: var(--t-xs);
+  line-height: 1.5;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition:
+    opacity 220ms var(--ease-out),
+    transform 260ms var(--ease-out),
+    visibility 0s 220ms;
+  pointer-events: none;
+}
+.demo-tip::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 100%;
+  border: 6px solid transparent;
+  border-top-color: #ffffff;
+}
+.demo-info:hover .demo-tip,
+.demo-info:focus-within .demo-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 260ms var(--ease-out),
+    transform 300ms var(--ease-out),
+    visibility 0s;
+}
+/* the legal row is dimmed text; the demo "i" and its bubble stay at full strength */
+.ink .footer-legal.label {
+  opacity: 1;
+}
+.ink .footer-legal > span:not(.demo-info) {
+  opacity: 0.68;
 }

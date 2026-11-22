@@ -32,6 +32,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="cs">
       <head>
+        {/* home page, at the top: the bar floats on the landing scene with no backdrop from the first paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var b=${JSON.stringify(process.env.GITHUB_PAGES ? "/HMOTA" : "")};var p=location.pathname;if(p.slice(-1)==="/")p=p.slice(0,-1);if(p===b&&scrollY<40)document.documentElement.dataset.heroIntro="true"})()`,
+          }}
+        />
         <script
           // mark JS early so reveal text can wait for its split (CSS fallback shows it after 2.5 s)
           dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }}

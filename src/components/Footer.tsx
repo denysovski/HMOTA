@@ -65,11 +65,26 @@ export function Footer() {
         <p className="footer-word" aria-hidden="true">
           {site.name}
         </p>
-        <p className="footer-demo">
-          <span className="footer-demo-dot" aria-hidden="true" />
-          {site.demoNote}
-        </p>
         <div className="footer-legal label">
+          <span className="demo-info">
+            {/* the demo note lives in a bubble: hover, focus or tap the "i" */}
+            <button type="button" className="demo-info-btn" aria-describedby="demo-note">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.6}
+                aria-hidden="true"
+              >
+                <path d="M12 10.5v7" strokeLinecap="round" />
+                <circle cx="12" cy="6.6" r="1.6" fill="currentColor" stroke="none" />
+              </svg>
+              <span className="sr-only">Demo stránka</span>
+            </button>
+            <span className="demo-tip" role="tooltip" id="demo-note">
+              {site.demoNote}
+            </span>
+          </span>
           <span>
             © {new Date().getFullYear()} {site.legalName} · IČO {site.ico}
           </span>

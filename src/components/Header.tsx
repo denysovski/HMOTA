@@ -16,10 +16,16 @@ export function Header() {
   useEffect(() => {
     let last = window.scrollY;
     let raf = 0;
+    const root = document.documentElement;
     const check = () => {
       raf = 0;
       const y = window.scrollY;
-      if (y < 80) setHidden(false);
+      // over the landing scene (home): no backdrop, always shown; past it: white, hides going down
+      const hero = document.querySelector<HTMLElement>(".hero");
+      const overHero = !!hero && y < hero.offsetTop + hero.offsetHeight - 80;
+      if (overHero) root.dataset.heroIntro = "true";
+      else delete root.dataset.heroIntro;
+      if (y < 80 || overHero) setHidden(false);
       else if (y - last > 6) setHidden(true);
       else if (last - y > 6) setHidden(false);
       last = y;
@@ -28,11 +34,14 @@ export function Header() {
       if (!raf) raf = requestAnimationFrame(check);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+    check();
+    const late = window.setTimeout(check, 200); // the next page's hero may mount a moment later
     return () => {
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
+      window.clearTimeout(late);
     };
-  }, []);
+  }, [pathname]);
   // while the next page loads, the clicked link already counts as current (one underline only)
   const [pending, setPending] = useState<string | null>(null);
   const here = pending ?? pathname;

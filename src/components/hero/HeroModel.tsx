@@ -102,7 +102,6 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
     void import("./HeroScene");
     // hold the page at the top while the 3D warms up (released once it is ready)
     document.documentElement.dataset.heroLoading = "true";
-    document.documentElement.dataset.heroIntro = "true";
     const lock = window.setTimeout(() => lockScroll(true), 0);
     // never keep anyone waiting for long: lift the loader after 12 s whatever happens
     const bail = window.setTimeout(() => setReady(true), 12000);
@@ -110,7 +109,6 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(lock);
-      delete document.documentElement.dataset.heroIntro;
       window.clearTimeout(bail);
     };
   }, []);
@@ -144,8 +142,6 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
           ring.current?.style.setProperty("stroke-dashoffset", String(1 - self.progress));
           const st = self.progress > 0.025;
           setStarted((prev) => (prev === st ? prev : st));
-          if (st) delete document.documentElement.dataset.heroIntro;
-          else document.documentElement.dataset.heroIntro = "true";
           let s = 0;
           STAGES.forEach((stg, i) => {
             if (self.progress >= stg.at) s = i;
