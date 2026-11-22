@@ -195,14 +195,29 @@ export function HeroModel({ massing, poster, title, projectName }: Props) {
           // until the 3D is loaded and has played every stage once behind it, a short loader
           // holds the page: when it lifts, the animation is ready and scrolls without a hitch
           <div className="hero-loader" data-done={ready} aria-hidden={ready}>
-            <svg className="hero-loader-flower" viewBox="6.4 10.4 87.2 79.2">
-              {PETALS.map(([x, y], i) => (
-                <g key={i} style={{ ["--i" as string]: i }}>
-                  <circle className="petal-fill" cx={x} cy={y} r="10.5" />
-                  <circle className="petal-line" cx={x} cy={y} r="12" />
-                </g>
-              ))}
-            </svg>
+            <div className="hero-loader-flower">
+              {PETALS.map(([x, y], i) => {
+                /* the lime slides in from the previous petal's side, so the
+                   fill travels clockwise around the flower */
+                const [px, py] = PETALS[i === 0 ? 5 : i - 1]!;
+                const len = Math.hypot(x - px, y - py) || 1;
+                return (
+                  <span
+                    key={i}
+                    className="petal"
+                    style={{
+                      left: `${((x - 8) / 84) * 100}%`,
+                      top: `${((y - 12) / 76) * 100}%`,
+                      ["--i" as string]: i,
+                      ["--dx" as string]: `${((px - x) / len) * 104}%`,
+                      ["--dy" as string]: `${((py - y) / len) * 104}%`,
+                    }}
+                  >
+                    <span className="petal-fill" />
+                  </span>
+                );
+              })}
+            </div>
             <span className="sr-only">Načítání</span>
           </div>
         )}
