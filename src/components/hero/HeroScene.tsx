@@ -303,6 +303,14 @@ function Building({
       transparent: true,
       opacity: 0,
     });
+    // a sunlit wall is never brighter than the shade on the ground: seen through a ghost, a
+    // shadow stays a shadow instead of turning into a white patch
+    clayMat.onBeforeCompile = (sh) => {
+      sh.fragmentShader = sh.fragmentShader.replace(
+        "#include <dithering_fragment>",
+        "#include <dithering_fragment>\ngl_FragColor.rgb = min(gl_FragColor.rgb, vec3(0.84));",
+      );
+    };
     const labels: { pos: [number, number, number]; text: string; h: number }[] = [];
     const meshes: THREE.Mesh[] = [];
     for (const v of vols) {
@@ -318,7 +326,8 @@ function Building({
       const mesh = new THREE.Mesh(box, clayMat);
       clayMat.depthWrite = false;
       mesh.castShadow = false;
-      mesh.receiveShadow = true;
+      // a ghost: it throws a shadow but shows none, so the ground inside it stays clean
+      mesh.receiveShadow = false;
       meshes.push(mesh);
       mesh.renderOrder = -1;
       ghost.add(mesh);
@@ -678,8 +687,65 @@ function Rig({
   return null;
 }
 
-function Ground({ stages }: { stages: MutableRefObject<Stages> }) {
-  const mat = useMemo(() => new THREE.ShadowMaterial({ opacity: 0 }), []);
+/**
+ * Rectangles (scene units: minX, minZ, maxX, maxZ) of every footprint in the scene, the building's
+ * and the neighbours'. Shadows land only on open ground: inside a footprint there is a house.
+ */
+function footprints(massing: Volume[]): number[] {
+  const b = bounds(massing);
+  const out: number[] = [];
+  for (const v of massing.filter((m) => m.y === 0))
+    out.push(
+      (v.x - b.cx) * SCALE,
+      (v.z - b.cz) * SCALE,
+      (v.x + v.w - b.cx) * SCALE,
+      (v.z + v.d - b.cz) * SCALE,
+    );
+  for (const v of context(b))
+    out.push(
+      (v.x - b.cx) * SCALE,
+      (v.z - b.cz) * SCALE,
+      (v.x + v.w - b.cx) * SCALE,
+      (v.z + v.d - b.cz) * SCALE,
+    );
+  return out;
+}
+
+function Ground({ massing, stages }: { massing: Volume[]; stages: MutableRefObject<Stages> }) {
+  const mat = useMemo(() => {
+    const rects = footprints(massing);
+    const n = rects.length / 4;
+    const m = new THREE.ShadowMaterial({ opacity: 0 });
+    m.onBeforeCompile = (sh) => {
+      sh.uniforms.uFeet = {
+        value: Array.from(
+          { length: n },
+          (_, i) => new THREE.Vector4(rects[i * 4], rects[i * 4 + 1], rects[i * 4 + 2], rects[i * 4 + 3]),
+        ),
+      };
+      sh.vertexShader = sh.vertexShader
+        .replace("#include <common>", "#include <common>\nvarying vec2 vGround;")
+        .replace(
+          "#include <begin_vertex>",
+          "#include <begin_vertex>\nvGround = (modelMatrix * vec4(transformed, 1.0)).xz;",
+        );
+      sh.fragmentShader = sh.fragmentShader
+        .replace(
+          "#include <common>",
+          `#include <common>\nvarying vec2 vGround;\nuniform vec4 uFeet[${n}];`,
+        )
+        .replace(
+          "void main() {",
+          `void main() {
+  for (int i = 0; i < ${n}; i++) {
+    vec4 r = uFeet[i];
+    if (vGround.x > r.x && vGround.x < r.z && vGround.y > r.y && vGround.y < r.w) discard;
+  }`,
+        );
+    };
+    m.customProgramCacheKey = () => `ground-feet-${n}`;
+    return m;
+  }, [massing]);
   useFrame(() => {
     mat.opacity = 0.11 * stages.current.shadow;
   });
@@ -842,7 +908,7 @@ function HeroScene({ massing, labels, progress, active, onReady, onTime, kick }:
       <Driver progress={progress} stages={stages} snap={snap} onReady={onReady} />
       <hemisphereLight args={["#ffffff", "#dcdcd6", 1.4]} />
       <Sun stages={stages} onTime={onTime} />
-      <Ground stages={stages} />
+      <Ground massing={massing} stages={stages} />
       <Site massing={massing} stages={stages} />
       <Building massing={massing} stages={stages} labels={labels} />
       <Rig progress={progress} snap={snap} />
